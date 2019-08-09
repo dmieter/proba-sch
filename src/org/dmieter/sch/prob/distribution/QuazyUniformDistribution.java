@@ -7,15 +7,25 @@ package org.dmieter.sch.prob.distribution;
  */
 public class QuazyUniformDistribution extends Distribution {
     
-    private Float uniformLevel = 0f;
-    private 
+    private Double uniformLevel = 0d;
     
-    public QuazyUniformDistribution(Float level){
+    public QuazyUniformDistribution(Double level){
         uniformLevel = level;
     }
     
+    public QuazyUniformDistribution(Double level, Integer startTime, Integer endTime){
+        uniformLevel = level;
+        this.startTime = startTime;
+        this.endTime = endTime;
+    }
+    
     // returns probaility P that Event is after time t
-    public Float getProbability(Integer t){
-        return uniformLevel;
+    @Override
+    public Double getProbability(Integer t){
+        if(ifCorrectTime(t)){
+            return uniformLevel;
+        }else{
+            return 0d;
+        }
     }
 }
