@@ -14,23 +14,18 @@ import org.apache.commons.math3.distribution.RealDistribution;
 public class NormalDistribution extends Distribution {
 
     RealDistribution distribution;
-    
-    public NormalDistribution(Double mean, Double sd){
+
+    public NormalDistribution(Double mean, Double sd) {
         distribution = new org.apache.commons.math3.distribution.NormalDistribution(mean, sd);
     }
-    
-    public NormalDistribution(Double mean, Double sd, Integer startTime, Integer endTime){
-        super(startTime, endTime);
+
+    public NormalDistribution(Double mean, Double sd, Integer startTime, Integer endTime) {
         distribution = new org.apache.commons.math3.distribution.NormalDistribution(mean, sd);
     }
-    
+
     @Override
     public Double getProbability(Integer t) {
-        if(ifCorrectTime(t)){
-            return distribution.cumulativeProbability(t);
-        }else{
-            return 0d;
-        }
+        return distribution.cumulativeProbability(t);
     }
-    
+
 }

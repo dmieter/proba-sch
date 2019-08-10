@@ -1,5 +1,5 @@
 
-package org.dmieter.sch.prob.data;
+package org.dmieter.sch.prob.events;
 
 /**
  *

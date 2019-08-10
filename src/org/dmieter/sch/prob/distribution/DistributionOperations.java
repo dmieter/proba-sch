@@ -7,6 +7,8 @@ import java.util.List;
  * @author emelyanov
  */
 public class DistributionOperations {
+    
+    //HERE DISTRIBUTIONS SHOULD BE CHANGED TO EVENTS
     public static Float getAvailabilityP(Distribution d, Integer startTime, Integer endTime){
         // should return min value on the interval (as such distributions are monotone - only edge values should be checked)
         throw new UnsupportedOperationException();
