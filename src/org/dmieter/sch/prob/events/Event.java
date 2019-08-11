@@ -67,6 +67,10 @@ public class Event {
             return eventFinishedP; // resource allocation P == resource allocated P
         }
     }
+    
+    public boolean isActive(){
+        return status == EventStatus.ACTIVE;
+    }
 
     protected boolean ifCorrectTime(Integer t) {
         if (t >= startTime && t <= endTime) {
