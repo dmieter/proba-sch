@@ -17,4 +17,19 @@ public class QuazyUniformDistribution extends Distribution {
     public Double getProbability(Integer t) {
         return uniformLevel;
     }
+
+    @Override
+    public void setMean(Double mean) {
+        // do nothing
+    }
+
+    @Override
+    public void updateVariability(Double coef) {
+        // do nothing
+    }
+
+    @Override
+    public void shiftMean(Double shiftValue) {
+        // do nothing
+    }
 }
