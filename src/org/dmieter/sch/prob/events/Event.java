@@ -2,13 +2,18 @@ package org.dmieter.sch.prob.events;
 
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 import org.dmieter.sch.prob.distribution.Distribution;
-import org.dmieter.sch.prob.entity.Resource;
+import org.dmieter.sch.prob.resources.Resource;
 
 /**
  *
  * @author emelyanov
  */
+
+@Getter
+@Setter
 public class Event {
 
     protected EventStatus status = EventStatus.ACTIVE;
@@ -78,62 +83,6 @@ public class Event {
         } else {
             return false;
         }
-    }
-
-    /**
-     * @return the startTime
-     */
-    public int getStartTime() {
-        return startTime;
-    }
-
-    /**
-     * @param startTime the startTime to set
-     */
-    public void setStartTime(Integer startTime) {
-        this.startTime = startTime;
-    }
-
-    /**
-     * @return the endTime
-     */
-    public Integer getEndTime() {
-        return endTime;
-    }
-
-    /**
-     * @param endTime the endTime to set
-     */
-    public void setEndTime(Integer endTime) {
-        this.endTime = endTime;
-    }
-
-    /**
-     * @return the status
-     */
-    public EventStatus getStatus() {
-        return status;
-    }
-
-    /**
-     * @param status the status to set
-     */
-    public void setStatus(EventStatus status) {
-        this.status = status;
-    }
-
-    /**
-     * @return the affectedResources
-     */
-    public List<Resource> getAffectedResources() {
-        return affectedResources;
-    }
-
-    /**
-     * @param affectedResources the affectedResources to set
-     */
-    public void setAffectedResources(List<Resource> affectedResources) {
-        this.affectedResources = affectedResources;
     }
 
     public void addAffectedResource(Resource resource) {

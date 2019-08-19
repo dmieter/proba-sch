@@ -1,4 +1,4 @@
-package org.dmieter.sch.prob.entity;
+package org.dmieter.sch.prob.resources;
 
 import java.util.List;
 
