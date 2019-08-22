@@ -27,14 +27,11 @@ public class SchedulingController {
             return;
         }
         
-        Event startEvent = new 
-        
-        //job.getResourcesAllocation().getResources().stream()
-                .forEach(resource -> applyJobOnResource(job, resource));
+
     }
 
     private void applyJobOnResource(Job job, Resource resource) {
-        job.g
-        resource.
+
     }
+
 }

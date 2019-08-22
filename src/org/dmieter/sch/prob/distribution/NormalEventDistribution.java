@@ -20,7 +20,12 @@ public class NormalEventDistribution extends Distribution {
     public Double getProbability(Integer t) {
         return distribution.cumulativeProbability(t);
     }
-
+    
+    @Override
+    public Double getSampleValue() {
+        return distribution.sample();
+    }
+    
     @Override
     public void setMean(Double mean) {
         this.mean = mean;
@@ -52,4 +57,5 @@ public class NormalEventDistribution extends Distribution {
     public Double getSd() {
         return sd;
     }
+
 }

@@ -19,6 +19,11 @@ public class QuazyUniformDistribution extends Distribution {
     }
 
     @Override
+    public Double getSampleValue() {
+        return Double.NEGATIVE_INFINITY;
+    }
+
+    @Override
     public void setMean(Double mean) {
         // do nothing
     }

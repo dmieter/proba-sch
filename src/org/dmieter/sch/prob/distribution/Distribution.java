@@ -18,6 +18,9 @@ public abstract class Distribution {
     
     // returns probaility P that Event is finished before time t
     abstract public Double getProbability(Integer t);
+    
+    // returns random sample value according to distribution
+    abstract public Double getSampleValue();
 
     
 }

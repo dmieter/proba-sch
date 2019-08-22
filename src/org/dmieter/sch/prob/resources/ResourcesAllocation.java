@@ -17,6 +17,10 @@ public class ResourcesAllocation {
     private Integer startTime;
     private Integer endTime;
     
+    private Event startEvent;
+    private Event executionEvent;
+    private Event finishEvent;
+    
     private List<Resource> resources = new LinkedList<>();
     
 }

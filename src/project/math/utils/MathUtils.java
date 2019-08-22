@@ -28,5 +28,9 @@ public class MathUtils {
     public static double nextUp(double value) {
         return -Math.floor(-value);
     }
+    
+    public static int intNextUp(double value) {
+        return Double.valueOf(nextUp(value)).intValue();
+    }
 
 }

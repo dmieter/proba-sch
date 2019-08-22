@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.dmieter.sch.prob.distribution.Distribution;
 import org.dmieter.sch.prob.resources.Resource;
+import project.math.utils.MathUtils;
 
 /**
  *
@@ -21,6 +22,7 @@ public class Event {
 
     protected Integer startTime = Integer.MIN_VALUE;
     protected Integer endTime  = Integer.MAX_VALUE;
+    protected Integer eventTime;
 
     protected Distribution distribution;
 
@@ -87,5 +89,16 @@ public class Event {
 
     public void addAffectedResource(Resource resource) {
         affectedResources.add(resource);
+    }
+    
+    public Integer collapseEvent(){
+        Integer realizationTime = MathUtils.intNextUp(distribution.getSampleValue());
+        if(realizationTime > endTime){
+            eventTime = endTime;
+        } else if(realizationTime < startTime){
+            eventTime = startTime;
+        }
+        
+        return eventTime;
     }
 }
