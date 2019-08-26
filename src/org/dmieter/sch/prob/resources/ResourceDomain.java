@@ -8,4 +8,12 @@ import java.util.List;
  */
 public class ResourceDomain {
     protected List<Resource> resources;
+    
+    public ResourceDomain(){
+        
+    }
+    
+    public ResourceDomain(List<Resource> resources){
+        this.resources = resources;
+    }
 }

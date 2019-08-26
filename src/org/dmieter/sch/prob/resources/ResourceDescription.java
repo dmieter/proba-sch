@@ -7,8 +7,8 @@ package org.dmieter.sch.prob.resources;
  */
 public class ResourceDescription { 
     
-    public int mips;
-    public int ram;
+    public double mips;
+    public double ram;
     
     public double price;
     

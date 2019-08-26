@@ -26,11 +26,11 @@ public class Resource {
     }
     
     public void addEvent(Event event){
-       events.add(event);
+        getEvents().add(event);
     }
     
     public Collection<Event> getActiveEvents(Integer startTime, Integer endTime){
-        return events.stream()
+        return getEvents().stream()
                 .filter(e -> (e.getStartTime() <= endTime && e.getEndTime() >= startTime))
                 .filter(e -> e.isActive())
                 .collect(Collectors.toList());
@@ -43,6 +43,13 @@ public class Resource {
      */
     public ResourceDescription getDescription() {
         return description;
+    }
+
+    /**
+     * @return the events
+     */
+    public Collection<Event> getEvents() {
+        return events;
     }
     
 }

@@ -2,13 +2,20 @@ package org.dmieter.sch.prob.user.experiment;
 
 import java.util.Collections;
 import java.util.List;
+import org.apache.commons.math3.geometry.euclidean.oned.Interval;
+import org.dmieter.sch.prob.generator.ResourceGenerator;
 import org.dmieter.sch.prob.job.Job;
 import org.dmieter.sch.prob.job.RegularJob;
+import org.dmieter.sch.prob.resources.Resource;
+import org.dmieter.sch.prob.resources.ResourceDescription;
 import org.dmieter.sch.prob.resources.ResourceDomain;
 import org.dmieter.sch.prob.scheduler.AvaScheduler;
 import org.dmieter.sch.prob.scheduler.Scheduler;
 import org.dmieter.sch.prob.scheduler.SchedulerSettings;
 import org.dmieter.sch.prob.user.ResourceRequest;
+import project.math.distributions.GaussianFacade;
+import project.math.distributions.GaussianSettings;
+import project.math.distributions.UniformFacade;
 
 /**
  *
@@ -18,7 +25,6 @@ public class SimpleExperiment implements Experiment {
 
     private Scheduler scheduler;
     private SchedulerSettings settings;
-    
     
     @Override
     public void run(int expNnum) {
@@ -31,7 +37,7 @@ public class SimpleExperiment implements Experiment {
     }
     
     public void runSingleExperiment(){
-        ResourceDomain domain = generateResources();
+        ResourceDomain domain = generateResources(50);
         Job job = generateJobFlow().get(0);
         
         scheduler.flush();
@@ -43,8 +49,16 @@ public class SimpleExperiment implements Experiment {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    private ResourceDomain generateResources() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private ResourceDomain generateResources(int resNumber) {
+        
+        ResourceGenerator resGen = new ResourceGenerator();
+        resGen.intMIPS = new Interval(1, 8);
+        resGen.intRAM = new Interval(1, 8);
+        resGen.intPrice = new Interval(1, 12);
+        resGen.genPriceMutationIndex = new GaussianFacade(new GaussianSettings(0.7, 1, 1.3));
+        resGen.genHardwareMutationIndex = new GaussianFacade(new GaussianSettings(0.6, 1, 1.2));
+
+        return resGen.generateResourceDomain(resNumber);
     }
 
     private List<Job> generateJobFlow() {
