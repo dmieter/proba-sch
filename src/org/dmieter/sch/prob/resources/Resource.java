@@ -2,23 +2,22 @@ package org.dmieter.sch.prob.resources;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Queue;
-import java.util.TreeSet;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import lombok.Getter;
 import org.dmieter.sch.prob.events.Event;
 
 /**
  *
  * @author emelyanov
  */
+@Getter
 public class Resource {
     protected Long id;
     protected ResourceDescription description;
-    protected Collection<Event> events = new ArrayList<>();
+    protected List<Event> events = new ArrayList<>();
     
     public Resource(Long id, ResourceDescription description){
         this.id = id;
@@ -26,17 +25,17 @@ public class Resource {
     }
     
     public void addEvent(Event event){
-        getEvents().add(event);
+        events.add(event);
+        Collections.sort(events, Comparator.comparing(Event::getEventTime));
     }
     
-    public Collection<Event> getActiveEvents(Integer startTime, Integer endTime){
+    public List<Event> getActiveEvents(Integer startTime, Integer endTime){
         return getEvents().stream()
                 .filter(e -> (e.getStartTime() <= endTime && e.getEndTime() >= startTime))
                 .filter(e -> e.isActive())
+                .sorted(Comparator.comparing(Event::getEventTime))
                 .collect(Collectors.toList());
     }
-
-    
     
     /**
      * @return the description
@@ -48,7 +47,7 @@ public class Resource {
     /**
      * @return the events
      */
-    public Collection<Event> getEvents() {
+    private Collection<Event> getEvents() {
         return events;
     }
     

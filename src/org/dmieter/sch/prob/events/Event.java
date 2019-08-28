@@ -101,4 +101,9 @@ public class Event {
         
         return eventTime;
     }
+
+    public static int compareByTime(Event e1, Event e2){
+        return e1.eventTime.compareTo(e2.eventTime);
+    }
+    
 }
