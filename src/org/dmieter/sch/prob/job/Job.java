@@ -14,12 +14,22 @@ import org.dmieter.sch.prob.resources.ResourcesAllocation;
 @Setter
 public class Job {
 
+    protected String name;
+    
     protected ResourceRequest resourceRequest;
 
     protected ResourcesAllocation resourcesAllocation;
 
     protected Double startVariability;
     protected Double finishVariability;
+    
+    public Job(){
+        
+    }
+    
+    public Job(String name){
+        this.name = name;
+    }
     
     public Job(ResourceRequest request){
         this.resourceRequest = request;

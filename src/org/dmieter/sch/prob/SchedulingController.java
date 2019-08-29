@@ -32,14 +32,29 @@ public class SchedulingController {
 
     }
 
-    private void applyJobOnResource(Job job, Resource resource) {
-
+    public void applyJobOnResource(Job job, Resource resource) {
+        
     }
     
     public static Optional<Event> getNextEvent(Integer startTime, Resource resource, EventType eventType){
-        return resource.getActiveEvents(startTime, Integer.MAX_VALUE).stream().sequential()
+        return getNextEvent(startTime, resource.getActiveEvents(startTime, Integer.MAX_VALUE), eventType);
+    }
+    
+    public static Optional<Event> getNextEvent(Integer startTime, List<Event> events, EventType eventType){
+        return events.stream().sequential()
                 .filter(e -> e.getEventTime() >= startTime)
                 .filter(e -> eventType.equals(e.getType()))
+                .findFirst();
+    }
+    
+    
+    public static Optional<Event> getNextEvent(Integer startTime, Resource resource){
+        return getNextEvent(startTime, resource.getActiveEvents(startTime, Integer.MAX_VALUE));
+    }
+    
+    public static Optional<Event> getNextEvent(Integer startTime, List<Event> events){
+        return events.stream().sequential()
+                .filter(e -> e.getEventTime() >= startTime)
                 .findFirst();
     }
 
