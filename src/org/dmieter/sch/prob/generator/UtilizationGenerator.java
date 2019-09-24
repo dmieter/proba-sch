@@ -27,8 +27,13 @@ public class UtilizationGenerator extends Generator {
     public Interval intStartVariability;
     public Interval intFinishVariability;
     
-    public void generateUtilization(ResourceDomain domain, Interval timeInterval) {
-        domain.getResources().stream().parallel()
+    private SchedulingController schedulingController;
+    
+    public void generateUtilization(SchedulingController controller, Interval timeInterval) {
+        
+        this.schedulingController = controller;
+        
+        schedulingController.getResourceDomain().getResources().stream()//.parallel()
                 .forEach(resource -> generateResourceUtilization(resource, timeInterval));
     }
     
@@ -95,7 +100,7 @@ public class UtilizationGenerator extends Generator {
         
         // generate events and assign to resource
         JobController.generateEvents(job);
-        SchedulingController.applyJobOnResource(job, resource);
+        schedulingController.allocateResource(allocation, resource);
         
         return jobLength;
     }

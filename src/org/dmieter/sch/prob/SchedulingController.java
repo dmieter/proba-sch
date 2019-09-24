@@ -11,12 +11,14 @@ import org.dmieter.sch.prob.events.Event;
 import org.dmieter.sch.prob.events.EventType;
 import org.dmieter.sch.prob.job.Job;
 import org.dmieter.sch.prob.resources.Resource;
+import org.dmieter.sch.prob.resources.ResourcesAllocation;
 
 /**
  *
  * @author dmieter
  */
 public class SchedulingController {
+    
     protected Integer time;
     
     protected Queue<Event> events = new PriorityQueue<>(Comparator.comparing(Event::getStartTime));
@@ -24,7 +26,12 @@ public class SchedulingController {
     
     protected ResourceDomain resourceDomain;
     
-    protected void applyJob(Job job){
+    public SchedulingController(ResourceDomain resourceDomain){
+        this.resourceDomain = resourceDomain;
+        time = 0;
+    }
+    
+    protected void scheduleJob(Job job){
         if(job.getResourcesAllocation() == null){
             return;
         }
@@ -32,8 +39,22 @@ public class SchedulingController {
 
     }
 
-    public void applyJobOnResource(Job job, Resource resource) {
+    public void allocateResource(ResourcesAllocation allocation, Resource resource) {
         
+        Event startEvent = allocation.getStartEvent();
+        Event executionEvent = allocation.getExecutionEvent();
+        Event finishEvent = allocation.getFinishEvent();
+        
+        events.add(startEvent);
+        resource.addEvent(startEvent);
+        
+        if(executionEvent != null){
+            events.add(executionEvent);
+            resource.addEvent(executionEvent);
+        }
+        
+        events.add(finishEvent);
+        resource.addEvent(finishEvent);
     }
     
     public static Optional<Event> getNextEvent(Integer startTime, Resource resource, EventType eventType){
@@ -56,6 +77,10 @@ public class SchedulingController {
         return events.stream().sequential()
                 .filter(e -> e.getEventTime() >= startTime)
                 .findFirst();
+    }
+
+    public ResourceDomain getResourceDomain(){
+        return resourceDomain;
     }
 
 }

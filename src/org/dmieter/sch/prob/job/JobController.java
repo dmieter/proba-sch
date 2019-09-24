@@ -56,11 +56,11 @@ public class JobController {
         Integer rightTime = MathUtils.intNextUp(job.getResourcesAllocation().getStartTime() + SD_INTERVAL_COEFFICIENT * job.startVariability);
         
         
-        return new Event(distribution, leftTime, rightTime, EventType.ALLOCATING_RESOURCE);
+        return new Event(distribution, leftTime, rightTime, job.getResourcesAllocation().getStartTime(), EventType.ALLOCATING_RESOURCE);
     }
     
     public static Event generateJobFinishEvent(Job job){
-        Distribution distribution = new NormalEventDistribution(job.getResourcesAllocation().getStartTime().doubleValue(), 
+        Distribution distribution = new NormalEventDistribution(job.getResourcesAllocation().getEndTime().doubleValue(), 
                                                                 job.startVariability);
 
         // N epsilon interval for process to finish                                                       
@@ -68,10 +68,10 @@ public class JobController {
         Integer leftTime = job.getResourcesAllocation().getEndTime() - halfIntervalLength;  
         Integer rightTime = job.getResourcesAllocation().getEndTime() + halfIntervalLength;
         
-        return new Event(distribution, leftTime, rightTime, EventType.RELEASING_RESOURCE);
+        return new Event(distribution, leftTime, rightTime, job.getResourcesAllocation().getEndTime(), EventType.RELEASING_RESOURCE);
     }
     
     public static Event generateJobExecutionEvent(Job job, Integer eventStartTime, Integer eventEndTime){
-        return new Event(new QuazyUniformDistribution(1d), eventStartTime, eventEndTime, EventType.GENERAL);
+        return new Event(new QuazyUniformDistribution(1d), eventStartTime, eventEndTime, eventStartTime, EventType.GENERAL);
     }
 }

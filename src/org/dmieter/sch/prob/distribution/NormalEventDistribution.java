@@ -14,6 +14,8 @@ public class NormalEventDistribution extends Distribution {
 
     public NormalEventDistribution(Double mean, Double sd) {
         distribution = new NormalDistribution(mean, sd);
+        this.mean = mean;
+        this.sd = sd;
     }
 
     @Override

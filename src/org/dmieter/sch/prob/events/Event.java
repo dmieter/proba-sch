@@ -28,18 +28,20 @@ public class Event {
 
     protected List<Resource> affectedResources = new ArrayList<>();
 
-    public Event(Distribution distribution, Integer startTime, Integer endTime, EventType type) {
+    public Event(Distribution distribution, Integer startTime, Integer endTime, Integer eventTime, EventType type) {
         this.distribution = distribution;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.eventTime = eventTime;
         this.type = type;
     }
 
-    public Event(Distribution distribution, Integer startTime, Integer endTime, 
+    public Event(Distribution distribution, Integer startTime, Integer endTime, Integer eventTime,
                                                             EventType type, Resource resource) {
         this.distribution = distribution;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.eventTime = eventTime;
         this.type = type;
 
         affectedResources.add(resource);

@@ -3,7 +3,9 @@ package org.dmieter.sch.prob.user.experiment;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.math3.geometry.euclidean.oned.Interval;
+import org.dmieter.sch.prob.SchedulingController;
 import org.dmieter.sch.prob.generator.ResourceGenerator;
+import org.dmieter.sch.prob.generator.UtilizationGenerator;
 import org.dmieter.sch.prob.job.Job;
 import org.dmieter.sch.prob.job.RegularJob;
 import org.dmieter.sch.prob.resources.Resource;
@@ -26,6 +28,8 @@ public class SimpleExperiment implements Experiment {
     private Scheduler scheduler;
     private SchedulerSettings settings;
     
+    private SchedulingController schedulingController;
+    
     @Override
     public void run(int expNnum) {
         initScheduler();
@@ -38,6 +42,9 @@ public class SimpleExperiment implements Experiment {
     
     public void runSingleExperiment(){
         ResourceDomain domain = generateResources(50);
+        schedulingController = new SchedulingController(domain);
+        generateUtilization(schedulingController);
+        
         Job job = generateJobFlow().get(0);
         
         scheduler.flush();
@@ -60,6 +67,17 @@ public class SimpleExperiment implements Experiment {
 
         return resGen.generateResourceDomain(resNumber);
     }
+    
+    private void generateUtilization(SchedulingController controller){
+        
+        UtilizationGenerator uGen = new UtilizationGenerator();
+        uGen.intFinishVariability = new Interval(20, 50);
+        uGen.intStartVariability = new Interval(0, 5);
+        uGen.intJobLength = new Interval(50, 200);
+        uGen.intLoad = new Interval(0.1, 0.3);
+        uGen.generateUtilization(controller, new Interval(0, 1000));
+        
+    }
 
     private List<Job> generateJobFlow() {
         ResourceRequest request = new ResourceRequest(100, 2, 1000, 1);
@@ -73,4 +91,8 @@ public class SimpleExperiment implements Experiment {
         settings = new SchedulerSettings();
     }
 
+    public SchedulingController getSchedulingController(){
+        return schedulingController;
+    }
+    
 }
