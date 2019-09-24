@@ -59,7 +59,7 @@ public class DomainVisualizerPanel extends JPanel {
                 int probValue = MathUtils.intNextUp(e.getResourcesAllocatedP(x)*PROBABILITY_HEIGHT);
                 g2d.drawLine(startPoint.x+x, startPoint.y-probValue-1, startPoint.x+x, startPoint.y-probValue-1);
             }
-            g2d.drawLine(e.getEventTime(), startPoint.y, e.getEventTime(), startPoint.y-10);
+            g2d.drawLine(startPoint.x+e.getEventTime(), startPoint.y, startPoint.x+e.getEventTime(), startPoint.y-10);
         }
     }
 

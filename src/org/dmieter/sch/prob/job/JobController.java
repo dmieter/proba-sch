@@ -63,7 +63,7 @@ public class JobController {
     
     public static Event generateJobFinishEvent(Job job){
         Distribution distribution = new NormalEventDistribution(job.getResourcesAllocation().getEndTime().doubleValue(), 
-                                                                job.startVariability);
+                                                                job.finishVariability);
 
         // N epsilon interval for process to finish                                                       
         Integer halfIntervalLength = MathUtils.intNextUp(SD_INTERVAL_COEFFICIENT * job.finishVariability);
