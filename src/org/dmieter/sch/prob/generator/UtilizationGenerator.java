@@ -62,10 +62,17 @@ public class UtilizationGenerator extends Generator {
             return assignJob(resource, startTime, jobLength);
         }
 
-        // 1. Check if we can start job at initial start time
+        // 0. Check if there are any events after start time
         Optional<Event> nextEvent = SchedulingController.getNextEvent(startTime, events);
-        if (!nextEvent.isPresent() || nextEvent.get().getEventTime() < startTime + jobLength) {
-            // no intersections with events when starting at startTime
+        if (!nextEvent.isPresent()) {
+            // no events after start time
+            return assignJob(resource, startTime, jobLength);
+        }
+        
+        // 1. If next event allocates resources - check if we can start before
+        if(nextEvent.get().getType() == EventType.ALLOCATING_RESOURCE 
+                && nextEvent.get().getEndTime() > startTime + jobLength){
+            
             return assignJob(resource, startTime, jobLength);
         }
 
@@ -75,7 +82,7 @@ public class UtilizationGenerator extends Generator {
             startTime = nextFinishEvent.get().getEventTime() + 1; // we can start just after next finish
             Optional<Event> nextStartEvent = SchedulingController.getNextEvent(startTime, events, EventType.ALLOCATING_RESOURCE);
             
-            if (!nextStartEvent.isPresent() || nextStartEvent.get().getEventTime() < startTime + jobLength) {
+            if (!nextStartEvent.isPresent() || nextStartEvent.get().getEndTime() > startTime + jobLength) {
                 // enough time between current finish and next start
                 return assignJob(resource, startTime, jobLength);
             } // else next cycle and next finish event procesing

@@ -29,7 +29,7 @@ public class JobController {
             // start time and end time variabilities should be ok with job length
             Integer middleTime = MathUtils.intNextUp(job.getResourcesAllocation().getStartTime() 
                                     + (job.getResourcesAllocation().getEndTime() - job.getResourcesAllocation().getStartTime()) 
-                                        * (job.getStartVariability()/job.getFinishVariability()));
+                                        * (job.getStartVariability()/(2*job.getFinishVariability())));
             startEvent.setEndTime(middleTime);
             finishEvent.setStartTime(middleTime);
             
@@ -46,17 +46,19 @@ public class JobController {
     }
     
     public static Event generateJobStartEvent(Job job){
-        Distribution distribution = new NormalEventDistribution(job.getResourcesAllocation().getStartTime().doubleValue(), 
-                                                                job.startVariability);
         
+        Integer halfIntervalLength = MathUtils.intNextUp(SD_INTERVAL_COEFFICIENT * job.startVariability);
+
         // we can't start before scheduled time
         Integer leftTime = job.getResourcesAllocation().getStartTime();  
         
         // N epsilon interval for process to start
-        Integer rightTime = MathUtils.intNextUp(job.getResourcesAllocation().getStartTime() + SD_INTERVAL_COEFFICIENT * job.startVariability);
+        Integer rightTime = job.getResourcesAllocation().getStartTime() + 2*halfIntervalLength;
         
+        Distribution distribution = new NormalEventDistribution(job.getResourcesAllocation().getStartTime().doubleValue() + halfIntervalLength, 
+                                                                job.startVariability);
         
-        return new Event(distribution, leftTime, rightTime, job.getResourcesAllocation().getStartTime(), EventType.ALLOCATING_RESOURCE);
+        return new Event(distribution, leftTime, rightTime, job.getResourcesAllocation().getStartTime() + halfIntervalLength, EventType.ALLOCATING_RESOURCE);
     }
     
     public static Event generateJobFinishEvent(Job job){

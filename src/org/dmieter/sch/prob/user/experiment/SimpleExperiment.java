@@ -71,10 +71,10 @@ public class SimpleExperiment implements Experiment {
     private void generateUtilization(SchedulingController controller){
         
         UtilizationGenerator uGen = new UtilizationGenerator();
-        uGen.intFinishVariability = new Interval(20, 50);
-        uGen.intStartVariability = new Interval(0, 5);
-        uGen.intJobLength = new Interval(50, 200);
-        uGen.intLoad = new Interval(0.1, 0.3);
+        uGen.intFinishVariability = new Interval(5, 40);
+        uGen.intStartVariability = new Interval(2, 10);
+        uGen.intJobLength = new Interval(200, 400);
+        uGen.intLoad = new Interval(0.3, 0.5);
         uGen.generateUtilization(controller, new Interval(0, 1000));
         
     }
