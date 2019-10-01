@@ -41,7 +41,7 @@ public class SimpleExperiment implements Experiment {
     }
     
     public void runSingleExperiment(){
-        ResourceDomain domain = generateResources(50);
+        ResourceDomain domain = generateResources(20);
         schedulingController = new SchedulingController(domain);
         generateUtilization(schedulingController);
         
@@ -73,7 +73,7 @@ public class SimpleExperiment implements Experiment {
         UtilizationGenerator uGen = new UtilizationGenerator();
         uGen.intFinishVariability = new Interval(5, 40);
         uGen.intStartVariability = new Interval(2, 10);
-        uGen.intJobLength = new Interval(200, 400);
+        uGen.intJobLength = new Interval(50, 200);
         uGen.intLoad = new Interval(0.3, 0.5);
         uGen.generateUtilization(controller, new Interval(0, 1000));
         

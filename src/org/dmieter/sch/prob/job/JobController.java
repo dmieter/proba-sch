@@ -27,8 +27,8 @@ public class JobController {
         
         if(startEvent.getEndTime() > finishEvent.getStartTime()){
             // start time and end time variabilities should be ok with job length
-            Integer middleTime = MathUtils.intNextUp(job.getResourcesAllocation().getStartTime() 
-                                    + (job.getResourcesAllocation().getEndTime() - job.getResourcesAllocation().getStartTime()) 
+            Integer middleTime = MathUtils.intNextUp(startEvent.getEventTime()
+                                    + (finishEvent.getEventTime() - startEvent.getEventTime()) 
                                         * (job.getStartVariability()/(2*job.getFinishVariability())));
             startEvent.setEndTime(middleTime);
             finishEvent.setStartTime(middleTime);
