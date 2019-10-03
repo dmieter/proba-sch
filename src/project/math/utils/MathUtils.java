@@ -32,5 +32,9 @@ public class MathUtils {
     public static int intNextUp(double value) {
         return Double.valueOf(nextUp(value)).intValue();
     }
+    
+    public static Double min(Double d){
+        Math.m
+    }
 
 }
