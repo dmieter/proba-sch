@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.dmieter.sch.prob.user.ResourceRequest;
 import org.dmieter.sch.prob.resources.ResourcesAllocation;
+import org.dmieter.sch.prob.scheduler.criteria.UserPreferenceModel;
 
 /**
  *
@@ -22,6 +23,8 @@ public class Job {
 
     protected Double startVariability;
     protected Double finishVariability;
+    
+    private UserPreferenceModel preferences;
     
     public Job(){
         

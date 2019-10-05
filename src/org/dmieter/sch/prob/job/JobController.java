@@ -5,6 +5,7 @@ import org.dmieter.sch.prob.distribution.NormalEventDistribution;
 import org.dmieter.sch.prob.distribution.QuazyUniformDistribution;
 import org.dmieter.sch.prob.events.Event;
 import org.dmieter.sch.prob.events.EventType;
+import org.dmieter.sch.prob.resources.Resource;
 import org.dmieter.sch.prob.resources.ResourcesAllocation;
 import project.math.utils.MathUtils;
 
@@ -75,5 +76,9 @@ public class JobController {
     
     public static Event generateJobExecutionEvent(Job job, Integer eventStartTime, Integer eventEndTime){
         return new Event(new QuazyUniformDistribution(1d), eventStartTime, eventEndTime, eventStartTime, EventType.GENERAL);
+    }
+    
+    public static Integer estimateExecutionTime(Job job, Resource resource){
+        return MathUtils.intNextUp(job.getResourceRequest().getVolume()/resource.getDescription().mips);
     }
 }
