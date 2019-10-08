@@ -1,5 +1,6 @@
 package org.dmieter.sch.prob.events;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -27,6 +28,8 @@ public class Event {
     protected Distribution distribution;
 
     protected List<Resource> affectedResources = new ArrayList<>();
+    
+    protected Color eventColor;
 
     public Event(Distribution distribution, Integer startTime, Integer endTime, Integer eventTime, EventType type) {
         this.distribution = distribution;

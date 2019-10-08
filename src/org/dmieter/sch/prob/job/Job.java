@@ -21,8 +21,8 @@ public class Job {
 
     protected ResourcesAllocation resourcesAllocation;
 
-    protected Double startVariability;
-    protected Double finishVariability;
+    protected Double startVariability = 0d;
+    protected Double finishVariability = 0d;
     
     private UserPreferenceModel preferences;
     

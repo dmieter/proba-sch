@@ -4,9 +4,11 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.util.List;
 import java.util.Random;
 import javax.swing.JPanel;
 import org.dmieter.sch.prob.events.Event;
+import org.dmieter.sch.prob.job.Job;
 import org.dmieter.sch.prob.resources.Resource;
 import org.dmieter.sch.prob.resources.ResourceDomain;
 import project.math.utils.MathUtils;
@@ -52,12 +54,22 @@ public class DomainVisualizerPanel extends JPanel {
     }
 
     private void drawResource(Graphics2D g2d, Resource resource, Point startPoint) {
+        // 1. draw mini coordinates
         g2d.drawLine(startPoint.x, startPoint.y, startPoint.x, startPoint.y - RESOURCE_HEIGHT);
         g2d.drawLine(startPoint.x, startPoint.y, startPoint.x + 1000, startPoint.y);
+        
+        // 2. draw events
         for (Event e : resource.getActiveEvents(0, Integer.MAX_VALUE)) {
             for (Integer x = e.getStartTime(); x < e.getEndTime(); x++) {
                 int probValue = MathUtils.intNextUp(e.getResourcesAllocatedP(x)*PROBABILITY_HEIGHT);
-                g2d.drawLine(startPoint.x+x, startPoint.y-probValue-1, startPoint.x+x, startPoint.y-probValue-1);
+                
+                if(e.getEventColor() != null){
+                    g2d.setColor(e.getEventColor());
+                    g2d.drawLine(startPoint.x+x, startPoint.y, startPoint.x+x, startPoint.y-probValue-1);
+                } else{
+                    g2d.setColor(Color.BLACK);
+                    g2d.drawLine(startPoint.x+x, startPoint.y-probValue-1, startPoint.x+x, startPoint.y-probValue-1);
+                }
             }
             g2d.drawLine(startPoint.x+e.getEventTime(), startPoint.y, startPoint.x+e.getEventTime(), startPoint.y-10);
         }

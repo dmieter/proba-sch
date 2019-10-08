@@ -13,8 +13,9 @@ import org.dmieter.sch.prob.job.JobController;
 import org.dmieter.sch.prob.resources.Resource;
 import org.dmieter.sch.prob.resources.ResourceDomain;
 import org.dmieter.sch.prob.resources.ResourcesAllocation;
-import org.dmieter.sch.prob.scheduler.allocator.Allocation;
+import org.dmieter.sch.prob.scheduler.allocator.GreedyMaxPAllocator;
 import org.dmieter.sch.prob.scheduler.allocator.ResourceAvailability;
+import org.dmieter.sch.prob.scheduler.criteria.AvailableProbabilityCriterion;
 
 /**
  *
@@ -22,6 +23,7 @@ import org.dmieter.sch.prob.scheduler.allocator.ResourceAvailability;
  */
 public class AvaScheduler implements Scheduler {
 
+    AvailableProbabilityCriterion criterionP = new AvailableProbabilityCriterion();
     AvaSchedulerSettings settings;
 
     @Override
@@ -48,11 +50,18 @@ public class AvaScheduler implements Scheduler {
         Double bestCriterionValue = Double.NEGATIVE_INFINITY;
         Allocation bestAllocation = null;
         
+        // searching for best allocation in time
         for (int t = currentTime; t < deadline; t += settings.getScanDelta()) {
             Allocation curAllocation = findBestAllocation(job, domain, t, deadline);
-            if(curAllocation.criterionValue > bestCriterionValue){
+            if(curAllocation != null && 
+                    curAllocation.criterionValue > bestCriterionValue){
+                
                 bestAllocation = curAllocation;
                 bestCriterionValue = curAllocation.criterionValue;
+                
+                if(settings.getOptimizationProblem() == AvaSchedulerSettings.OptProblem.FIRST_PROBABLE){
+                    break; // we've just found the first probable allocation, break
+                }
             }
         }
         
@@ -64,39 +73,84 @@ public class AvaScheduler implements Scheduler {
         }
     }
 
-    private Allocation findBestAllocation(Job job, ResourceDomain domain, int t, int deadline) {
+    private Allocation findBestAllocation(Job job, ResourceDomain domain, int startTime, int deadline) {
         TreeMap<Integer, List<Resource>> performanceOptions
                                 = preparePerformanceOptions(domain, job);
         
+        Double bestCriterionValue = Double.NEGATIVE_INFINITY;
+        Allocation bestLocalAllocation = null;
+        
         List<Resource> availableResources = new ArrayList<>();
         
+        // searching for best allocation from availableResources at startTime
         for(Map.Entry<Integer, List<Resource>> entry : performanceOptions.entrySet()){
             availableResources.addAll(entry.getValue());
-            //Allocation curAllocation = findBestAllocation(job, availableResources, t, entry.getKey())
+            Allocation curAllocation = findBestAllocation(job, availableResources, startTime, entry.getKey());
+            
+            if(curAllocation != null && 
+                    curAllocation.criterionValue > bestCriterionValue){
+                
+                bestLocalAllocation = curAllocation;
+                bestCriterionValue = curAllocation.criterionValue;
+            }
         }
         
-        return null;
+        return bestLocalAllocation;
     }
 
     private Allocation findBestAllocation(Job job, List<Resource> availableResources, int startTime, Integer length) {
         int endTime = startTime + length;
         
+        // Each resource may be selected to run job (no slots), 
+        // however some nodes may have high utilization probability on the considered interval
+        // 0. So we perform a filtering step
         List<ResourceAvailability> feasibleResources = availableResources.stream()
                 .map(r -> new ResourceAvailability(
                         r, 
                         ProbabilityUtils.getAvailabilityProbability(r, startTime, endTime)))
                 .filter(r -> 
                         (job.getPreferences().getMinAvailability() == null 
-                        || r.availabilityP <= job.getPreferences().getMinAvailability()))
+                        || r.availabilityP >= job.getPreferences().getMinAvailability()))
                 .collect(Collectors.toList());
                 
         if(job.getResourceRequest().getParallelNum() > feasibleResources.size()){
-            return null;
+            return null;  // not enough feasible nodes
         }
         
-        if(settings.getSchedulingMode() == AvaSchedulerSettings.SchMode.GREEDY_SIMPLE){
+        // 1. Retrieveing resources allocation with maximum availability P
+        List<ResourceAvailability> selectedResources = null;
+        switch(settings.getSchedulingMode()) {
+            case GREEDY_SIMPLE: 
+                selectedResources = GreedyMaxPAllocator.allocateResources(job, feasibleResources);
+                break;
             
+            default: throw new UnsupportedOperationException(settings.getSchedulingMode() + " isn't supported by AvaScheduler");
         }
+        
+        //2. Prepare and check if we can use this allocation
+        if(selectedResources != null){
+            List<Resource> candidateResources = selectedResources.stream()
+                    .map(r -> r.getResource())
+                    .collect(Collectors.toList());
+            
+            Double totalAvailabilityP = criterionP.getValue(candidateResources, startTime, endTime);
+
+            if(job.getPreferences().getMinAvailability() != null
+                    && totalAvailabilityP < job.getPreferences().getMinAvailability()) {
+                return null; // selected resources don't satisfy MinAvailability requirement
+            }
+            
+            // 3. Creating allocation
+            Allocation allocation = new Allocation();
+            allocation.resources = candidateResources;
+            allocation.criterionValue = job.getPreferences().getCriterion().getValue(candidateResources, startTime, endTime);
+            allocation.startTime = startTime;
+            allocation.endTime = endTime;
+            
+            return allocation;
+        }
+        
+        return null;
     }
     
 
@@ -127,5 +181,13 @@ public class AvaScheduler implements Scheduler {
         }
         
         return new TreeMap<>(performanceOptions);
+    }
+                            
+    private class Allocation {
+        
+        int startTime;
+        int endTime;
+        Double criterionValue;
+        List<Resource> resources;
     }
 }

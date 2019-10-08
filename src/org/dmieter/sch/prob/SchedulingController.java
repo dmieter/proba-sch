@@ -31,11 +31,14 @@ public class SchedulingController {
         time = 0;
     }
     
-    protected void scheduleJob(Job job){
+    public void scheduleJob(Job job){
         if(job.getResourcesAllocation() == null){
             return;
         }
         
+        resourceDomain.getResources().stream()
+                .filter(r -> job.getResourcesAllocation().getResources().contains(r))
+                .forEach(r -> allocateResource(job.getResourcesAllocation(), r));
 
     }
 

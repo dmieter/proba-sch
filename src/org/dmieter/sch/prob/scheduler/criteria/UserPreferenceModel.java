@@ -7,15 +7,15 @@ import lombok.Setter;
  *
  * @author dmieter
  */
-
 @Getter
 @Setter
 public class UserPreferenceModel {
+
     private Integer costBudget;
-    
+
     private Integer deadline;
-    
+
     private AllocationCriterion criterion;
-    
+
     private Double minAvailability;
 }

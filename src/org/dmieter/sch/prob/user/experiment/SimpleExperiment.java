@@ -1,5 +1,6 @@
 package org.dmieter.sch.prob.user.experiment;
 
+import java.awt.Color;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.math3.geometry.euclidean.oned.Interval;
@@ -12,8 +13,11 @@ import org.dmieter.sch.prob.resources.Resource;
 import org.dmieter.sch.prob.resources.ResourceDescription;
 import org.dmieter.sch.prob.resources.ResourceDomain;
 import org.dmieter.sch.prob.scheduler.AvaScheduler;
+import org.dmieter.sch.prob.scheduler.AvaSchedulerSettings;
 import org.dmieter.sch.prob.scheduler.Scheduler;
 import org.dmieter.sch.prob.scheduler.SchedulerSettings;
+import org.dmieter.sch.prob.scheduler.criteria.AvailableProbabilityCriterion;
+import org.dmieter.sch.prob.scheduler.criteria.UserPreferenceModel;
 import org.dmieter.sch.prob.user.ResourceRequest;
 import project.math.distributions.GaussianFacade;
 import project.math.distributions.GaussianSettings;
@@ -26,7 +30,7 @@ import project.math.distributions.UniformFacade;
 public class SimpleExperiment implements Experiment {
 
     private Scheduler scheduler;
-    private SchedulerSettings settings;
+    private AvaSchedulerSettings settings;
     
     private SchedulingController schedulingController;
     
@@ -48,7 +52,14 @@ public class SimpleExperiment implements Experiment {
         Job job = generateJobFlow().get(0);
         
         scheduler.flush();
-        //scheduler.schedule(job, domain, 0, settings);
+        scheduler.schedule(job, domain, 0, settings);
+        
+        job.getResourcesAllocation().getStartEvent().setEventColor(Color.red);
+        if(job.getResourcesAllocation().getExecutionEvent()!= null){
+            job.getResourcesAllocation().getExecutionEvent().setEventColor(Color.green);
+        }
+        job.getResourcesAllocation().getFinishEvent().setEventColor(Color.red);
+        schedulingController.scheduleJob(job);
     }
 
     @Override
@@ -80,15 +91,27 @@ public class SimpleExperiment implements Experiment {
     }
 
     private List<Job> generateJobFlow() {
-        ResourceRequest request = new ResourceRequest(100, 2, 1000, 1);
+        ResourceRequest request = new ResourceRequest(100, 5, 1000, 1);
+        UserPreferenceModel preferences = new UserPreferenceModel();
+        preferences.setCriterion(new AvailableProbabilityCriterion());
+        preferences.setDeadline(2000);
+        preferences.setMinAvailability(0.3);
+        preferences.setCostBudget(100);
+        
         Job job = new RegularJob(request);
+        job.setStartVariability(0d);
+        job.setFinishVariability(1d);
+        job.setPreferences(preferences);
         
         return Collections.singletonList(job);
     }
 
     private void initScheduler() {
         scheduler = new AvaScheduler();
-        settings = new SchedulerSettings();
+        settings = new AvaSchedulerSettings();
+        settings.setScanDelta(1);
+        settings.setOptimizationProblem(AvaSchedulerSettings.OptProblem.MAX_PROBABILITY);
+        settings.setSchedulingMode(AvaSchedulerSettings.SchMode.GREEDY_SIMPLE);
     }
 
     public SchedulingController getSchedulingController(){

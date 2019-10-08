@@ -48,6 +48,10 @@ public class JobController {
     
     public static Event generateJobStartEvent(Job job){
         
+        if(job.startVariability <= 0d){
+            return generateDummyGeneralEvent(job.getResourcesAllocation().getStartTime());
+        }
+        
         Integer halfIntervalLength = MathUtils.intNextUp(SD_INTERVAL_COEFFICIENT * job.startVariability);
 
         // we can't start before scheduled time
@@ -63,6 +67,11 @@ public class JobController {
     }
     
     public static Event generateJobFinishEvent(Job job){
+        
+        if(job.finishVariability <= 0d){
+            return generateDummyGeneralEvent(job.getResourcesAllocation().getEndTime());
+        }
+        
         Distribution distribution = new NormalEventDistribution(job.getResourcesAllocation().getEndTime().doubleValue(), 
                                                                 job.finishVariability);
 
@@ -80,5 +89,9 @@ public class JobController {
     
     public static Integer estimateExecutionTime(Job job, Resource resource){
         return MathUtils.intNextUp(job.getResourceRequest().getVolume()/resource.getDescription().mips);
+    }
+
+    private static Event generateDummyGeneralEvent(int eventTime) {
+        return new Event(new QuazyUniformDistribution(1d), eventTime, eventTime, eventTime, EventType.GENERAL);
     }
 }
