@@ -48,7 +48,7 @@ public class SimpleExperiment implements Experiment {
         Job job = generateJobFlow().get(0);
         
         scheduler.flush();
-        scheduler.schedule(job, domain, settings);
+        //scheduler.schedule(job, domain, 0, settings);
     }
 
     @Override

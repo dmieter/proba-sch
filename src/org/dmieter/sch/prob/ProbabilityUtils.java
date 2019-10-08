@@ -3,6 +3,7 @@ package org.dmieter.sch.prob;
 
 import java.util.List;
 import org.dmieter.sch.prob.events.Event;
+import org.dmieter.sch.prob.resources.Resource;
 import project.math.utils.MathUtils;
 
 /**
@@ -10,6 +11,11 @@ import project.math.utils.MathUtils;
  * @author emelyanov
  */
 public class ProbabilityUtils {
+    
+    public static Double getAvailabilityProbability(Resource resource, int startTime, int endTime){
+        List<Event> events = resource.getActiveEvents(startTime, endTime);
+        return getAvailabilityProbability(events, startTime, endTime);
+    }
     
     public static Double getAvailabilityProbability(List<Event> events, int startTime, int endTime){
         
