@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.dmieter.sch.prob.ProbabilityUtils;
 import org.dmieter.sch.prob.job.Job;
@@ -104,8 +105,10 @@ public class AvaScheduler implements Scheduler {
         // Each resource may be selected to run job (no slots), 
         // however some nodes may have high utilization probability on the considered interval
         // 0. So we perform a filtering step
+        AtomicInteger counter = new AtomicInteger(0);
         List<ResourceAvailability> feasibleResources = availableResources.stream()
                 .map(r -> new ResourceAvailability(
+                        counter.getAndIncrement(),
                         r, 
                         ProbabilityUtils.getAvailabilityProbability(r, startTime, endTime)))
                 .filter(r -> 

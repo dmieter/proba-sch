@@ -13,10 +13,12 @@ import org.dmieter.sch.prob.resources.Resource;
 @Setter
 public class ResourceAvailability {
 
+    public Integer orderNum;
     public Resource resource;
     public Double availabilityP;
 
-    public ResourceAvailability(Resource resource, Double availabilityP) {
+    public ResourceAvailability(Integer orderNum, Resource resource, Double availabilityP) {
+        this.orderNum = orderNum;
         this.resource = resource;
         this.availabilityP = availabilityP;
     }
