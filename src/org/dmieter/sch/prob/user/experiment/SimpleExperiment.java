@@ -52,7 +52,7 @@ public class SimpleExperiment implements Experiment {
         Job job = generateJobFlow().get(0);
         
         scheduler.flush();
-        scheduler.schedule(job, domain, 0, settings);
+        scheduler.schedule(job, domain, 200, settings);
         
         job.getResourcesAllocation().getStartEvent().setEventColor(Color.red);
         if(job.getResourcesAllocation().getExecutionEvent()!= null){
@@ -85,22 +85,22 @@ public class SimpleExperiment implements Experiment {
         uGen.intFinishVariability = new Interval(5, 40);
         uGen.intStartVariability = new Interval(2, 10);
         uGen.intJobLength = new Interval(50, 200);
-        uGen.intLoad = new Interval(0.3, 0.5);
-        uGen.generateUtilization(controller, new Interval(0, 1000));
+        uGen.intLoad = new Interval(0.1, 0.3);
+        uGen.generateUtilization(controller, new Interval(0, 1200));
         
     }
 
     private List<Job> generateJobFlow() {
-        ResourceRequest request = new ResourceRequest(100, 5, 1000, 1);
+        ResourceRequest request = new ResourceRequest(8300, 8, 700, 1);
         UserPreferenceModel preferences = new UserPreferenceModel();
         preferences.setCriterion(new AvailableProbabilityCriterion());
-        preferences.setDeadline(2000);
-        preferences.setMinAvailability(0.3);
+        preferences.setDeadline(800);
+        //preferences.setMinAvailability(0.2);
         preferences.setCostBudget(100);
         
         Job job = new RegularJob(request);
         job.setStartVariability(0d);
-        job.setFinishVariability(1d);
+        job.setFinishVariability(0d);
         job.setPreferences(preferences);
         
         return Collections.singletonList(job);
@@ -111,7 +111,7 @@ public class SimpleExperiment implements Experiment {
         settings = new AvaSchedulerSettings();
         settings.setScanDelta(1);
         settings.setOptimizationProblem(AvaSchedulerSettings.OptProblem.MAX_PROBABILITY);
-        settings.setSchedulingMode(AvaSchedulerSettings.SchMode.GREEDY_SIMPLE);
+        settings.setSchedulingMode(AvaSchedulerSettings.SchMode.KNAPSACK);
     }
 
     public SchedulingController getSchedulingController(){
