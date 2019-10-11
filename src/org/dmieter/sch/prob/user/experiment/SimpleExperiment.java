@@ -22,6 +22,7 @@ import org.dmieter.sch.prob.user.ResourceRequest;
 import project.math.distributions.GaussianFacade;
 import project.math.distributions.GaussianSettings;
 import project.math.distributions.UniformFacade;
+import project.math.utils.MathUtils;
 
 /**
  *
@@ -91,16 +92,24 @@ public class SimpleExperiment implements Experiment {
     }
 
     private List<Job> generateJobFlow() {
-        ResourceRequest request = new ResourceRequest(8300, 8, 700, 1);
+        
+        Integer parallelNum = 7;
+        Double averageMips = 4.5d;
+        Double averagePrice = 6.5d;
+        Integer volume = 700;
+        
+        Integer budget = MathUtils.intNextUp(parallelNum*volume*averagePrice/averageMips);
+                
+        ResourceRequest request = new ResourceRequest(budget, 7, volume, 1);
         UserPreferenceModel preferences = new UserPreferenceModel();
         preferences.setCriterion(new AvailableProbabilityCriterion());
         preferences.setDeadline(800);
-        //preferences.setMinAvailability(0.2);
+        preferences.setMinAvailability(0.5);
         preferences.setCostBudget(100);
         
         Job job = new RegularJob(request);
-        job.setStartVariability(0d);
-        job.setFinishVariability(0d);
+        job.setStartVariability(2d);
+        job.setFinishVariability(2d);
         job.setPreferences(preferences);
         
         return Collections.singletonList(job);
@@ -111,7 +120,7 @@ public class SimpleExperiment implements Experiment {
         settings = new AvaSchedulerSettings();
         settings.setScanDelta(1);
         settings.setOptimizationProblem(AvaSchedulerSettings.OptProblem.MAX_PROBABILITY);
-        settings.setSchedulingMode(AvaSchedulerSettings.SchMode.KNAPSACK);
+        settings.setSchedulingMode(AvaSchedulerSettings.SchMode.GREEDY_LIMITED);
     }
 
     public SchedulingController getSchedulingController(){
