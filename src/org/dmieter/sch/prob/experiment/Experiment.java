@@ -1,4 +1,4 @@
-package org.dmieter.sch.prob.user.experiment;
+package org.dmieter.sch.prob.experiment;
 
 import org.dmieter.sch.prob.SchedulingController;
 import org.dmieter.sch.prob.resources.ResourceDomain;

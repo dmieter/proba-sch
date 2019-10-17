@@ -1,4 +1,4 @@
-package org.dmieter.sch.prob.user.experiment;
+package org.dmieter.sch.prob.experiment;
 
 import java.awt.Color;
 import java.util.Collections;
@@ -32,35 +32,37 @@ public class SimpleExperiment implements Experiment {
 
     private Scheduler scheduler;
     private AvaSchedulerSettings settings;
-    
+
     private SchedulingController schedulingController;
-    
+
     @Override
     public void run(int expNnum) {
         initScheduler();
-        
-        for(int i = 0; i < expNnum; i++){
+
+        for (int i = 0; i < expNnum; i++) {
             System.out.println(i);
             runSingleExperiment();
         }
     }
-    
-    public void runSingleExperiment(){
+
+    public void runSingleExperiment() {
         ResourceDomain domain = generateResources(20);
         schedulingController = new SchedulingController(domain);
         generateUtilization(schedulingController);
-        
+
         Job job = generateJobFlow().get(0);
-        
+
         scheduler.flush();
         scheduler.schedule(job, domain, 200, settings);
-        
-        job.getResourcesAllocation().getStartEvent().setEventColor(Color.red);
-        if(job.getResourcesAllocation().getExecutionEvent()!= null){
-            job.getResourcesAllocation().getExecutionEvent().setEventColor(Color.green);
+
+        if (job.getResourcesAllocation() != null) {
+            job.getResourcesAllocation().getStartEvent().setEventColor(Color.red);
+            if (job.getResourcesAllocation().getExecutionEvent() != null) {
+                job.getResourcesAllocation().getExecutionEvent().setEventColor(Color.green);
+            }
+            job.getResourcesAllocation().getFinishEvent().setEventColor(Color.red);
+            schedulingController.scheduleJob(job);
         }
-        job.getResourcesAllocation().getFinishEvent().setEventColor(Color.red);
-        schedulingController.scheduleJob(job);
     }
 
     @Override
@@ -69,7 +71,7 @@ public class SimpleExperiment implements Experiment {
     }
 
     private ResourceDomain generateResources(int resNumber) {
-        
+
         ResourceGenerator resGen = new ResourceGenerator();
         resGen.intMIPS = new Interval(1, 8);
         resGen.intRAM = new Interval(1, 8);
@@ -79,39 +81,39 @@ public class SimpleExperiment implements Experiment {
 
         return resGen.generateResourceDomain(resNumber);
     }
-    
-    private void generateUtilization(SchedulingController controller){
-        
+
+    private void generateUtilization(SchedulingController controller) {
+
         UtilizationGenerator uGen = new UtilizationGenerator();
         uGen.intFinishVariability = new Interval(5, 40);
         uGen.intStartVariability = new Interval(2, 10);
         uGen.intJobLength = new Interval(50, 200);
         uGen.intLoad = new Interval(0.1, 0.3);
         uGen.generateUtilization(controller, new Interval(0, 1200));
-        
+
     }
 
     private List<Job> generateJobFlow() {
-        
-        Integer parallelNum = 7;
+
+        Integer parallelNum = 6;
         Double averageMips = 4.5d;
-        Double averagePrice = 6.5d;
-        Integer volume = 700;
-        
-        Integer budget = MathUtils.intNextUp(parallelNum*volume*averagePrice/averageMips);
-                
-        ResourceRequest request = new ResourceRequest(budget, 7, volume, 1);
+        Double averagePrice = 7d;
+        Integer volume = 600;
+
+        Integer budget = MathUtils.intNextUp(parallelNum * volume * averagePrice / averageMips);
+
+        ResourceRequest request = new ResourceRequest(budget, parallelNum, volume, 1);
         UserPreferenceModel preferences = new UserPreferenceModel();
         preferences.setCriterion(new AvailableProbabilityCriterion());
         preferences.setDeadline(800);
-        preferences.setMinAvailability(0.5);
+        preferences.setMinAvailability(0.1);
         preferences.setCostBudget(100);
-        
+
         Job job = new RegularJob(request);
         job.setStartVariability(2d);
         job.setFinishVariability(2d);
         job.setPreferences(preferences);
-        
+
         return Collections.singletonList(job);
     }
 
@@ -123,8 +125,8 @@ public class SimpleExperiment implements Experiment {
         settings.setSchedulingMode(AvaSchedulerSettings.SchMode.GREEDY_LIMITED);
     }
 
-    public SchedulingController getSchedulingController(){
+    public SchedulingController getSchedulingController() {
         return schedulingController;
     }
-    
+
 }
