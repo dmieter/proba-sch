@@ -37,6 +37,17 @@ public class Resource {
                 .collect(Collectors.toList());
     }
     
+    public Resource copy(){
+        Resource copyResource = new Resource(id.longValue(), description.copy());
+        List<Event> copyEvents = events.stream()
+                .map(e -> e.copy())
+                .collect(Collectors.toList());
+        
+        copyResource.events = copyEvents;
+        
+        return copyResource;
+    }
+    
     /**
      * @return the description
      */

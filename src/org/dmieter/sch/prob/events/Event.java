@@ -50,6 +50,19 @@ public class Event {
         affectedResources.add(resource);
     }
     
+    public Event copy(){
+        Event copyEvent = new Event(distribution, 
+                                    startTime.intValue(), 
+                                    endTime.intValue(),
+                                    eventTime.intValue(), 
+                                    type);
+        
+        copyEvent.status = status;
+        copyEvent.eventColor = eventColor;
+        
+        return copyEvent;
+    }
+    
     public Double getEventFinishedP(Integer time){
         if(time < startTime){
             return 0d;  // event not started and thus not finished
