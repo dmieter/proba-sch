@@ -38,4 +38,15 @@ public class Job {
         this.resourceRequest = request;
     }
 
+    public Job copy(){
+        Job copy = new Job(name);
+        copy.startVariability = startVariability;
+        copy.finishVariability = finishVariability;
+        copy.preferences = preferences.copy();
+        copy.resourceRequest = resourceRequest.copy();
+        // we don't copy allocations!!!
+        
+        return copy;
+    }
+    
 }

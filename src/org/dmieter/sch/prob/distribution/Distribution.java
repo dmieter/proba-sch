@@ -21,6 +21,8 @@ public abstract class Distribution {
     
     // returns random sample value according to distribution
     abstract public Double getSampleValue();
+    
+    abstract public Distribution copy();
 
     
 }

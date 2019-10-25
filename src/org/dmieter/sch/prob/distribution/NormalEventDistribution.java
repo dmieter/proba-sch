@@ -60,4 +60,9 @@ public class NormalEventDistribution extends Distribution {
         return sd;
     }
 
+    @Override
+    public Distribution copy() {
+        return new NormalEventDistribution(mean, sd);
+    }
+
 }

@@ -37,4 +37,9 @@ public class QuazyUniformDistribution extends Distribution {
     public void shiftMean(Double shiftValue) {
         // do nothing
     }
+
+    @Override
+    public Distribution copy() {
+        return new QuazyUniformDistribution(uniformLevel);
+    }
 }

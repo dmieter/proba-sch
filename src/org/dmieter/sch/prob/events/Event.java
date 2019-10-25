@@ -51,16 +51,16 @@ public class Event {
     }
     
     public Event copy(){
-        Event copyEvent = new Event(distribution, 
-                                    startTime.intValue(), 
-                                    endTime.intValue(),
-                                    eventTime.intValue(), 
+        Event copy = new Event(distribution.copy(),  // should we copy distribution as well? 
+                                    startTime, 
+                                    endTime,
+                                    eventTime, 
                                     type);
         
-        copyEvent.status = status;
-        copyEvent.eventColor = eventColor;
+        copy.status = status;
+        copy.eventColor = eventColor;
         
-        return copyEvent;
+        return copy;
     }
     
     public Double getEventFinishedP(Integer time){

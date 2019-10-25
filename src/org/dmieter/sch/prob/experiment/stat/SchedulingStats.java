@@ -20,4 +20,6 @@ public abstract class SchedulingStats {
     
     public abstract String getData();
     
+    public abstract void logFailedExperiment();
+    
 }

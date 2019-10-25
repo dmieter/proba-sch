@@ -38,14 +38,14 @@ public class Resource {
     }
     
     public Resource copy(){
-        Resource copyResource = new Resource(id.longValue(), description.copy());
+        Resource copy = new Resource(id, description.copy());
         List<Event> copyEvents = events.stream()
                 .map(e -> e.copy())
                 .collect(Collectors.toList());
         
-        copyResource.events = copyEvents;
+        copy.events = copyEvents;
         
-        return copyResource;
+        return copy;
     }
     
     /**

@@ -18,4 +18,14 @@ public class UserPreferenceModel {
     private AllocationCriterion criterion;
 
     private Double minAvailability;
+    
+    public UserPreferenceModel copy(){
+        UserPreferenceModel copy = new UserPreferenceModel();
+        copy.costBudget = costBudget;
+        copy.deadline = deadline;
+        copy.minAvailability = minAvailability;
+        copy.criterion = criterion;
+        
+        return copy;
+    }
 }

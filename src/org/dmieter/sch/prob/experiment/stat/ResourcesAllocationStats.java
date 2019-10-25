@@ -54,5 +54,10 @@ public class ResourcesAllocationStats extends SchedulingStats {
     public String getData() {
         return stats.getData();
     }
+
+    @Override
+    public void logFailedExperiment() {
+        stats.addValue(SUCCESS_RATE_STAT, 0d);
+    }
     
 }
