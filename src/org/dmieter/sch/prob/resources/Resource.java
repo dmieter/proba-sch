@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import org.dmieter.sch.prob.events.Event;
@@ -60,6 +61,22 @@ public class Resource {
      */
     private Collection<Event> getEvents() {
         return events;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 53 * hash + Objects.hashCode(this.id);
+        return hash;
+    }
+    
+    @Override
+    public boolean equals(Object obj){
+        if(obj instanceof Resource){
+            return id.equals(((Resource)obj).id);
+        }else{
+            return false;
+        }
     }
     
 }

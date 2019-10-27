@@ -56,7 +56,7 @@ public class AvaScheduler implements Scheduler {
         // searching for best allocation in time
         for (int t = currentTime; t < deadline; t += settings.getScanDelta()) {
             
-            if(t%5 == 0){
+            if(t%50 == 0){
                 System.out.println("Time scanned: " + t);
             }
             
@@ -132,15 +132,15 @@ public class AvaScheduler implements Scheduler {
         List<ResourceAvailability> selectedResources = null;
         switch (settings.getSchedulingMode()) {
             case GREEDY_SIMPLE:
-                selectedResources = GreedyMaxPAllocator.allocateResources(job, feasibleResources);
+                selectedResources = GreedyMaxPAllocator.allocateResources(job, feasibleResources, startTime, endTime);
                 break;
 
             case GREEDY_LIMITED:
-                selectedResources = GreedyMaxPLimitedAllocator.allocateResources(job, feasibleResources);
+                selectedResources = GreedyMaxPLimitedAllocator.allocateResources(job, feasibleResources, startTime, endTime);
                 break;
 
             case KNAPSACK:
-                selectedResources = KnapsackMaxPAllocator.allocateResources(job, feasibleResources);
+                selectedResources = KnapsackMaxPAllocator.allocateResources(job, feasibleResources, startTime, endTime);
                 break;
 
             default:

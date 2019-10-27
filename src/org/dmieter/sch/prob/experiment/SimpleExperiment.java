@@ -60,17 +60,21 @@ public class SimpleExperiment implements Experiment {
 
         Job job = generateJobFlow().get(0);
 
-        Integer startTime = 100;
+        Integer startTime = 300;
         
         
         boolean success = true;
+        long greedyT, knapsackT;
         
         /* GREEDY SCHEDULING */
         ResourceDomain domain1 = domain.copy();
         Job job1 = job.copy();
         scheduler.flush();
-        settings.setSchedulingMode(AvaSchedulerSettings.SchMode.GREEDY_SIMPLE);
+        settings.setSchedulingMode(AvaSchedulerSettings.SchMode.GREEDY_LIMITED);
+        
+        greedyT = System.nanoTime();
         scheduler.schedule(job1, domain1, startTime, settings);
+        greedyT = System.nanoTime() - greedyT;
         
         if(job1.getResourcesAllocation() == null){
             greedyStats.logFailedExperiment();
@@ -81,8 +85,11 @@ public class SimpleExperiment implements Experiment {
         ResourceDomain domain2 = domain.copy();
         Job job2 = job.copy();
         scheduler.flush();
-        settings.setSchedulingMode(AvaSchedulerSettings.SchMode.KNAPSACK);
+        settings.setSchedulingMode(AvaSchedulerSettings.SchMode.GREEDY_SIMPLE);
+        
+        knapsackT = System.nanoTime();
         scheduler.schedule(job2, domain2, startTime, settings);
+        knapsackT = System.nanoTime() - knapsackT;
         
         if(job2.getResourcesAllocation() == null){
             knapsackStats.logFailedExperiment();
@@ -90,8 +97,8 @@ public class SimpleExperiment implements Experiment {
         }
         
         if(success){
-            greedyStats.processAllocation(job1);
-            knapsackStats.processAllocation(job2);
+            greedyStats.processAllocation(job1, greedyT);
+            knapsackStats.processAllocation(job2, knapsackT);
             
             SumCostCriterion costC = new SumCostCriterion();
             AvailableProbabilityCriterion probC = new AvailableProbabilityCriterion();
@@ -102,7 +109,7 @@ public class SimpleExperiment implements Experiment {
             
             Double greedyP = probC.getValue(job1.getResourcesAllocation());
             Double knapsackP = probC.getValue(job2.getResourcesAllocation());
-            compareStats.addValue("P", greedyC-knapsackC);
+            compareStats.addValue("P", greedyP-knapsackP);
         }
         
         
@@ -139,8 +146,8 @@ public class SimpleExperiment implements Experiment {
     private void generateUtilization(SchedulingController controller) {
 
         UtilizationGenerator uGen = new UtilizationGenerator();
-        uGen.intFinishVariability = new Interval(5, 40);
-        uGen.intStartVariability = new Interval(2, 10);
+        uGen.intFinishVariability = new Interval(10, 80);
+        uGen.intStartVariability = new Interval(1, 20);
         uGen.intJobLength = new Interval(50, 200);
         uGen.intLoad = new Interval(0.1, 0.3);
         uGen.generateUtilization(controller, new Interval(0, 1200));
@@ -149,7 +156,7 @@ public class SimpleExperiment implements Experiment {
 
     private List<Job> generateJobFlow() {
 
-        Integer parallelNum = 6;
+        Integer parallelNum = 7;
         Double averageMips = 4.5d;
         Double averagePrice = 7d;
         Integer volume = 600;

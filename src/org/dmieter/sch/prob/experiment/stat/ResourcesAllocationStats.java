@@ -19,9 +19,15 @@ public class ResourcesAllocationStats extends SchedulingStats {
     private static final String SUCCESS_RATE_STAT = "Success Rate";
     private static final String SUCCESS_PROB_STAT = "Success Probability";
     private static final String USER_CRITERION_STAT = "User Criterion Value";
+    private static final String ALG_RUNNING_TIME = "Algorith Running Time";
     
     public ResourcesAllocationStats(String statsName) {
         super(statsName);
+    }
+    
+    public void processAllocation(Job job, Long runningTime){
+        stats.addValue(ALG_RUNNING_TIME, runningTime.doubleValue()/1000000000);
+        processAllocation(job);
     }
     
     public void processAllocation(Job job){
