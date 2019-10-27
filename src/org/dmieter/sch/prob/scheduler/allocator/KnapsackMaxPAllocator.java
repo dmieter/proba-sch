@@ -13,10 +13,11 @@ import org.dmieter.sch.prob.job.Job;
  */
 public class KnapsackMaxPAllocator extends OptAllocator {
 
-    public static List<ResourceAvailability> allocateResources(Job job, List<ResourceAvailability> feasibleResources) {
+    public static List<ResourceAvailability> allocateResources(Job job, List<ResourceAvailability> feasibleResources
+                                                                ,Integer startTime, Integer endTime) {
 
         // 1. Prepare optimization items
-        List<Item> items = prepareOptimizationItems(job, feasibleResources);
+        List<Item> items = prepareOptimizationItems(job, feasibleResources, startTime, endTime);
         
         // 2. Prepare optimization problem
         FixedItemsNumberKnapsackProblem problem = new FixedItemsNumberKnapsackProblem();

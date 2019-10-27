@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.dmieter.sch.prob.job.Job;
-import org.dmieter.sch.prob.job.JobController;
 import project.math.utils.MathUtils;
 
 /**
@@ -25,11 +24,12 @@ public class OptAllocator {
         return weightLimit >= totalWeight;
     }
     
-    protected static List<Item> prepareOptimizationItems(Job job, List<ResourceAvailability> resources){
+    protected static List<Item> prepareOptimizationItems(Job job, List<ResourceAvailability> resources
+                                                            ,Integer startTime, Integer endTime){
         List<Item> items = new ArrayList<>();
         for(ResourceAvailability resource : resources){
             Item item = new Item(resource.getOrderNum(),
-                                 MathUtils.intNextUp(JobController.estimateExecutionCost(job, resource.getResource())), 
+                                 MathUtils.intNextUp(resource.getResource().estimateUsageCost(startTime, endTime)), 
                                  resource.getAvailabilityP());
             item.setRefObject(resource);
             items.add(item);

@@ -90,10 +90,6 @@ public class JobController {
     public static Integer estimateExecutionTime(Job job, Resource resource){
         return MathUtils.intNextUp(job.getResourceRequest().getVolume()/resource.getDescription().mips);
     }
-    
-    public static Double estimateExecutionCost(Job job, Resource resource){
-        return resource.getDescription().price * estimateExecutionTime(job, resource);
-    }
 
     private static Event generateDummyGeneralEvent(int eventTime) {
         return new Event(new QuazyUniformDistribution(1d), eventTime, eventTime, eventTime, EventType.GENERAL);

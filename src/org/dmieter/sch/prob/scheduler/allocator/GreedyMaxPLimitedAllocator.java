@@ -11,10 +11,11 @@ import org.dmieter.sch.prob.job.Job;
  */
 public class GreedyMaxPLimitedAllocator extends OptAllocator {
 
-    public static List<ResourceAvailability> allocateResources(Job job, List<ResourceAvailability> feasibleResources) {
+    public static List<ResourceAvailability> allocateResources(Job job, List<ResourceAvailability> feasibleResources
+                                                                ,Integer startTime, Integer endTime) {
         
         // 0. Prepare optimization items
-        List<Item> items = prepareOptimizationItems(job, feasibleResources);
+        List<Item> items = prepareOptimizationItems(job, feasibleResources, startTime, endTime);
         
         
         // 1. First try to get n most probable resources

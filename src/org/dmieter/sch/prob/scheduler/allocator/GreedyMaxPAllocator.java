@@ -13,7 +13,8 @@ import org.dmieter.sch.prob.resources.Resource;
  */
 public class GreedyMaxPAllocator {
 
-    public static List<ResourceAvailability> allocateResources(Job job, List<ResourceAvailability> feasibleResources) {
+    public static List<ResourceAvailability> allocateResources(Job job, List<ResourceAvailability> feasibleResources
+                                                               ,Integer startTime, Integer endTime) {
         
         // 1. sorting resources by availabilityP in decreasing order
         List<ResourceAvailability> resources = new ArrayList<>(feasibleResources);

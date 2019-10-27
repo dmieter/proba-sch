@@ -18,7 +18,7 @@ public class SumCostCriterion implements AllocationCriterion {
     @Override
     public double getValue(List<Resource> resources, int startTime, int endTime) {
         return resources.stream()
-                .map(r -> r.getDescription().price*(endTime-startTime))
+                .map(r -> r.estimateUsageCost(startTime, endTime))
                 .reduce(0d, (a,b) -> (a+b));
     }
 }

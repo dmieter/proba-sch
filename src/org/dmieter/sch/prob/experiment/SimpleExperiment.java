@@ -53,14 +53,14 @@ public class SimpleExperiment implements Experiment {
     }
 
     public void runSingleExperiment() {
-        ResourceDomain domain = generateResources(20);
+        ResourceDomain domain = generateResources(40);
         
         schedulingController = new SchedulingController(domain);
         generateUtilization(schedulingController);
 
         Job job = generateJobFlow().get(0);
 
-        Integer startTime = 300;
+        Integer startTime = 100;
         
         
         boolean success = true;
@@ -146,8 +146,8 @@ public class SimpleExperiment implements Experiment {
     private void generateUtilization(SchedulingController controller) {
 
         UtilizationGenerator uGen = new UtilizationGenerator();
-        uGen.intFinishVariability = new Interval(10, 80);
-        uGen.intStartVariability = new Interval(1, 20);
+        uGen.intFinishVariability = new Interval(10, 50);
+        uGen.intStartVariability = new Interval(1, 10);
         uGen.intJobLength = new Interval(50, 200);
         uGen.intLoad = new Interval(0.1, 0.3);
         uGen.generateUtilization(controller, new Interval(0, 1200));
@@ -166,7 +166,7 @@ public class SimpleExperiment implements Experiment {
         ResourceRequest request = new ResourceRequest(budget, parallelNum, volume, 1d);
         UserPreferenceModel preferences = new UserPreferenceModel();
         preferences.setCriterion(new AvailableProbabilityCriterion());
-        preferences.setDeadline(800);
+        preferences.setDeadline(1200);
         preferences.setMinAvailability(0.1);
         preferences.setCostBudget(100);
 

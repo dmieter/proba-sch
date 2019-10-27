@@ -38,6 +38,10 @@ public class Resource {
                 .collect(Collectors.toList());
     }
     
+    public Double estimateUsageCost(int startTime, int endTime){
+        return description.price*(endTime-startTime);
+    }
+    
     public Resource copy(){
         Resource copy = new Resource(id, description.copy());
         List<Event> copyEvents = events.stream()

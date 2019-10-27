@@ -37,6 +37,12 @@ public class UtilizationGenerator extends Generator {
                 .forEach(resource -> generateResourceUtilization(resource, timeInterval));
     }
     
+    public void generateFailureEvents(SchedulingController controller, Interval timeInterval){
+        this.schedulingController = controller;
+        schedulingController.getResourceDomain().getResources().stream()//.parallel()
+                .forEach(resource -> generateFailureEvents(resource, timeInterval));
+    }
+    
     private void generateResourceUtilization(Resource resource, Interval timeInterval) {
         Double load = getUniformFromInterval(intLoad);
         Double sumJobsLength = 0d;
@@ -110,6 +116,10 @@ public class UtilizationGenerator extends Generator {
         schedulingController.allocateResource(allocation, resource);
         
         return jobLength;
+    }
+
+    private void generateFailureEvents(Resource resource, Interval timeInterval) {
+        Event failureEvent = Event(distribution, leftTime, rightTime, job.getResourcesAllocation().getStartTime() + halfIntervalLength, EventType.ALLOCATING_RESOURCE);
     }
     
 }
