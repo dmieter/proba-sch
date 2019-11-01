@@ -60,6 +60,11 @@ public class SchedulingController {
         resource.addEvent(finishEvent);
     }
     
+    public void processNewResourceEvent(Resource resource, Event event){
+        events.add(event);
+        resource.addEvent(event);
+    }
+    
     public static Optional<Event> getNextEvent(Integer startTime, Resource resource, EventType eventType){
         return getNextEvent(startTime, resource.getActiveEvents(startTime, Integer.MAX_VALUE), eventType);
     }

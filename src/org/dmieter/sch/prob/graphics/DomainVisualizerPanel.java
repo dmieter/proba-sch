@@ -54,9 +54,12 @@ public class DomainVisualizerPanel extends JPanel {
     }
 
     private void drawResource(Graphics2D g2d, Resource resource, Point startPoint) {
+        // 0. color init
+        g2d.setColor(Color.BLACK);
+
         // 1. draw mini coordinates
         g2d.drawLine(startPoint.x, startPoint.y, startPoint.x, startPoint.y - RESOURCE_HEIGHT);
-        g2d.drawLine(startPoint.x, startPoint.y, startPoint.x + 1000, startPoint.y);
+        g2d.drawLine(startPoint.x, startPoint.y, startPoint.x + 2000, startPoint.y);
         
         // 2. draw events
         for (Event e : resource.getActiveEvents(0, Integer.MAX_VALUE)) {

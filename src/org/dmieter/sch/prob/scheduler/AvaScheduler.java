@@ -9,6 +9,7 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.dmieter.sch.prob.ProbabilityUtils;
+import org.dmieter.sch.prob.experiment.stat.NamedStats;
 import org.dmieter.sch.prob.job.Job;
 import org.dmieter.sch.prob.job.JobController;
 import org.dmieter.sch.prob.resources.Resource;
@@ -28,6 +29,9 @@ public class AvaScheduler implements Scheduler {
 
     AvailableProbabilityCriterion criterionP = new AvailableProbabilityCriterion();
     AvaSchedulerSettings settings;
+
+    private static boolean logTimelineStats = false;
+    public static NamedStats schedulingTimeline = new NamedStats("SCHEDULING_SCAN_STATS");
 
     @Override
     public void flush() {
@@ -55,12 +59,14 @@ public class AvaScheduler implements Scheduler {
 
         // searching for best allocation in time
         for (int t = currentTime; t < deadline; t += settings.getScanDelta()) {
-            
-            if(t%50 == 0){
+
+            if (t % 200 == 0) {
                 System.out.println("Time scanned: " + t);
             }
-            
+
             Allocation curAllocation = findBestAllocation(job, domain, t, deadline);
+            logSchedulingResults(curAllocation);
+
             if (curAllocation != null
                     && curAllocation.criterionValue > bestCriterionValue) {
 
@@ -199,6 +205,16 @@ public class AvaScheduler implements Scheduler {
         }
 
         return new TreeMap<>(performanceOptions);
+    }
+
+    private void logSchedulingResults(Allocation allocation) {
+        if (logTimelineStats) {
+            if (allocation == null || allocation.criterionValue == null) {
+                AvaScheduler.schedulingTimeline.addValue(settings.getSchedulingMode().name(), 0d);
+            } else {
+                AvaScheduler.schedulingTimeline.addValue(settings.getSchedulingMode().name(), allocation.criterionValue);
+            }
+        }
     }
 
     private class Allocation {

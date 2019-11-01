@@ -1,10 +1,13 @@
 package org.dmieter.sch.prob.generator;
 
+import java.awt.Color;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.apache.commons.math3.geometry.euclidean.oned.Interval;
 import org.dmieter.sch.prob.SchedulingController;
+import org.dmieter.sch.prob.distribution.Distribution;
+import org.dmieter.sch.prob.distribution.NormalEventDistribution;
 import org.dmieter.sch.prob.events.Event;
 import org.dmieter.sch.prob.events.EventType;
 import org.dmieter.sch.prob.job.Job;
@@ -26,6 +29,7 @@ public class UtilizationGenerator extends Generator {
     public Interval intJobLength;
     public Interval intStartVariability;
     public Interval intFinishVariability;
+    public Interval intResourceEventMean;
     
     private SchedulingController schedulingController;
     
@@ -37,10 +41,10 @@ public class UtilizationGenerator extends Generator {
                 .forEach(resource -> generateResourceUtilization(resource, timeInterval));
     }
     
-    public void generateFailureEvents(SchedulingController controller, Interval timeInterval){
+    public void generateGlobalEvents(SchedulingController controller, Interval timeInterval, Color color){
         this.schedulingController = controller;
         schedulingController.getResourceDomain().getResources().stream()//.parallel()
-                .forEach(resource -> generateFailureEvents(resource, timeInterval));
+                .forEach(resource -> generateResourceGlobalEvents(resource, timeInterval, color));
     }
     
     private void generateResourceUtilization(Resource resource, Interval timeInterval) {
@@ -118,8 +122,20 @@ public class UtilizationGenerator extends Generator {
         return jobLength;
     }
 
-    private void generateFailureEvents(Resource resource, Interval timeInterval) {
-        Event failureEvent = Event(distribution, leftTime, rightTime, job.getResourcesAllocation().getStartTime() + halfIntervalLength, EventType.ALLOCATING_RESOURCE);
+    private void generateResourceGlobalEvents(Resource resource, Interval timeInterval, Color color) {
+        Integer failureExpectedTime = MathUtils.intNextUp(getUniformFromInterval(intResourceEventMean));
+        Double sd = (failureExpectedTime - timeInterval.getInf())/3;
+        
+        Distribution failureDistribution = new NormalEventDistribution(
+                                                    failureExpectedTime.doubleValue(),
+                                                    sd);
+        Event failureEvent = new Event(failureDistribution, 
+                                        MathUtils.intNextUp(timeInterval.getInf()), 
+                                        MathUtils.intNextUp(timeInterval.getSup()), 
+                                        failureExpectedTime, 
+                                        EventType.ALLOCATING_RESOURCE);
+        failureEvent.setEventColor(color);
+        schedulingController.processNewResourceEvent(resource, failureEvent);
     }
     
 }

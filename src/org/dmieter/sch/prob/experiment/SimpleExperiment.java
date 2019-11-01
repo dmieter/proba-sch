@@ -38,9 +38,10 @@ public class SimpleExperiment implements Experiment {
 
     private SchedulingController schedulingController;
     
-    private ResourcesAllocationStats greedyStats = new ResourcesAllocationStats("GREEDY");
-    private ResourcesAllocationStats knapsackStats = new ResourcesAllocationStats("KNAPSACK");
-    private NamedStats compareStats = new NamedStats("COMPARISON");
+    private final ResourcesAllocationStats simpleStats = new ResourcesAllocationStats("SIMPLE");
+    private final ResourcesAllocationStats greedyStats = new ResourcesAllocationStats("GREEDY");
+    private final ResourcesAllocationStats knapsackStats = new ResourcesAllocationStats("KNAPSACK");
+    private final NamedStats compareStats = new NamedStats("COMPARISON");
 
     @Override
     public void run(int expNnum) {
@@ -53,18 +54,17 @@ public class SimpleExperiment implements Experiment {
     }
 
     public void runSingleExperiment() {
-        ResourceDomain domain = generateResources(40);
+        ResourceDomain domain = generateResources(50);
         
         schedulingController = new SchedulingController(domain);
         generateUtilization(schedulingController);
 
         Job job = generateJobFlow().get(0);
 
-        Integer startTime = 100;
-        
-        
+        Integer startTime = 0;
+                
         boolean success = true;
-        long greedyT, knapsackT;
+        long greedyT, knapsackT, simpleT;
         
         /* GREEDY SCHEDULING */
         ResourceDomain domain1 = domain.copy();
@@ -85,7 +85,7 @@ public class SimpleExperiment implements Experiment {
         ResourceDomain domain2 = domain.copy();
         Job job2 = job.copy();
         scheduler.flush();
-        settings.setSchedulingMode(AvaSchedulerSettings.SchMode.GREEDY_SIMPLE);
+        settings.setSchedulingMode(AvaSchedulerSettings.SchMode.KNAPSACK);
         
         knapsackT = System.nanoTime();
         scheduler.schedule(job2, domain2, startTime, settings);
@@ -96,9 +96,25 @@ public class SimpleExperiment implements Experiment {
             success = false;
         }
         
+        /* SIMPLE SCHEDULING */
+        ResourceDomain domain3 = domain.copy();
+        Job job3 = job.copy();
+        scheduler.flush();
+        settings.setSchedulingMode(AvaSchedulerSettings.SchMode.GREEDY_SIMPLE);
+        
+        simpleT = System.nanoTime();
+        scheduler.schedule(job3, domain3, startTime, settings);
+        simpleT = System.nanoTime() - simpleT;
+        
+        if(job3.getResourcesAllocation() == null){
+            simpleStats.logFailedExperiment();
+            success = false;
+        }
+        
         if(success){
             greedyStats.processAllocation(job1, greedyT);
             knapsackStats.processAllocation(job2, knapsackT);
+            simpleStats.processAllocation(job3, simpleT);
             
             SumCostCriterion costC = new SumCostCriterion();
             AvailableProbabilityCriterion probC = new AvailableProbabilityCriterion();
@@ -125,9 +141,15 @@ public class SimpleExperiment implements Experiment {
 
     @Override
     public String printResults() {
-        return new StringBuilder(greedyStats.getData())
+        return new StringBuilder()
+                        .append(AvaScheduler.schedulingTimeline.getDetailedData(AvaSchedulerSettings.SchMode.GREEDY_SIMPLE.name()))
+                        .append(AvaScheduler.schedulingTimeline.getDetailedData(AvaSchedulerSettings.SchMode.GREEDY_LIMITED.name()))
+                        .append(AvaScheduler.schedulingTimeline.getDetailedData(AvaSchedulerSettings.SchMode.KNAPSACK.name()))
+                        .append(simpleStats.getData())
+                        .append(greedyStats.getData())
                         .append(knapsackStats.getData())
                         .append(compareStats.getData())
+                        .append(compareStats.getDetailedData("P"))
                         .toString();
     }
 
@@ -148,17 +170,23 @@ public class SimpleExperiment implements Experiment {
         UtilizationGenerator uGen = new UtilizationGenerator();
         uGen.intFinishVariability = new Interval(10, 50);
         uGen.intStartVariability = new Interval(1, 10);
-        uGen.intJobLength = new Interval(50, 200);
-        uGen.intLoad = new Interval(0.1, 0.3);
-        uGen.generateUtilization(controller, new Interval(0, 1200));
+        uGen.intJobLength = new Interval(50, 300);
+        uGen.intLoad = new Interval(0.3, 0.8);
+        uGen.generateUtilization(controller, new Interval(-300, 2500));
+        
+        //uGen.intResourceEventMean = new Interval(5000, 50000);
+        //uGen.generateGlobalEvents(controller, new Interval(0, 5000), Color.PINK); // failure
+        
+        uGen.intResourceEventMean = new Interval(1000, 20000);
+        uGen.generateGlobalEvents(controller, new Interval(0, 5000), Color.CYAN); // maintenance
 
     }
 
     private List<Job> generateJobFlow() {
 
-        Integer parallelNum = 7;
+        Integer parallelNum = 8;
         Double averageMips = 4.5d;
-        Double averagePrice = 7d;
+        Double averagePrice = 8d;
         Integer volume = 600;
 
         Integer budget = MathUtils.intNextUp(parallelNum * volume * averagePrice / averageMips);
