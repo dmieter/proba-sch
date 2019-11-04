@@ -14,7 +14,9 @@ public class ExperimentRunner {
     }
 
     private static void runExperiment() {
-        Experiment exp = new SimpleExperiment();
+        //Experiment exp = new SimpleExperiment();
+        Experiment exp = new SimplerExperiment();
+        
         exp.run(1);
         System.out.println(exp.printResults());
         DomainVisualizerFrame frame = new DomainVisualizerFrame(exp.getSchedulingController().getResourceDomain());

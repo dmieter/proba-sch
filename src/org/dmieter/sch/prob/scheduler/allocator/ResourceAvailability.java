@@ -22,4 +22,8 @@ public class ResourceAvailability {
         this.resource = resource;
         this.availabilityP = availabilityP;
     }
+    
+    public ResourceAvailability copy(){
+        return new ResourceAvailability(orderNum, resource.copy(), availabilityP);
+    }
 }

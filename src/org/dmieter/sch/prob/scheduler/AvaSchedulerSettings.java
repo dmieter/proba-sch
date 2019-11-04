@@ -18,6 +18,7 @@ public class AvaSchedulerSettings extends SchedulerSettings{
     }
     
     public enum SchMode {
+        MIN_COST,
         GREEDY_SIMPLE,
         GREEDY_LIMITED,
         KNAPSACK

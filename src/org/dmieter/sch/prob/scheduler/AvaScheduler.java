@@ -18,6 +18,7 @@ import org.dmieter.sch.prob.resources.ResourcesAllocation;
 import org.dmieter.sch.prob.scheduler.allocator.GreedyMaxPAllocator;
 import org.dmieter.sch.prob.scheduler.allocator.GreedyMaxPLimitedAllocator;
 import org.dmieter.sch.prob.scheduler.allocator.KnapsackMaxPAllocator;
+import org.dmieter.sch.prob.scheduler.allocator.MinCostAllocator;
 import org.dmieter.sch.prob.scheduler.allocator.ResourceAvailability;
 import org.dmieter.sch.prob.scheduler.criteria.AvailableProbabilityCriterion;
 
@@ -112,7 +113,7 @@ public class AvaScheduler implements Scheduler {
 
         return bestLocalAllocation;
     }
-
+  
     private Allocation findBestAllocation(Job job, List<Resource> availableResources, int startTime, Integer length) {
         int endTime = startTime + length;
 
@@ -137,6 +138,10 @@ public class AvaScheduler implements Scheduler {
         // 1. Retrieveing resources allocation with maximum availability P
         List<ResourceAvailability> selectedResources = null;
         switch (settings.getSchedulingMode()) {
+            case MIN_COST:
+                selectedResources = MinCostAllocator.allocateResources(job, feasibleResources, startTime, endTime);
+                break;
+            
             case GREEDY_SIMPLE:
                 selectedResources = GreedyMaxPAllocator.allocateResources(job, feasibleResources, startTime, endTime);
                 break;

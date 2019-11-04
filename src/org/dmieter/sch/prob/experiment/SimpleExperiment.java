@@ -85,7 +85,7 @@ public class SimpleExperiment implements Experiment {
         ResourceDomain domain2 = domain.copy();
         Job job2 = job.copy();
         scheduler.flush();
-        settings.setSchedulingMode(AvaSchedulerSettings.SchMode.KNAPSACK);
+        settings.setSchedulingMode(AvaSchedulerSettings.SchMode.GREEDY_SIMPLE);
         
         knapsackT = System.nanoTime();
         scheduler.schedule(job2, domain2, startTime, settings);
