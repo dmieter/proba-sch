@@ -227,7 +227,7 @@ public class SimplerExperiment implements Experiment {
         
         // 4. adding uniform event to the resource
         Event generalEvent = new Event(
-                                        new QuazyUniformDistribution(availability), 
+                                        new QuazyUniformDistribution(1-availability), // this event represent resources allocation = 1 - availability
                                         startTime, 
                                         endTime, 
                                         startTime, 
@@ -240,11 +240,9 @@ public class SimplerExperiment implements Experiment {
     private List<Job> generateJobFlow() {
 
         Integer parallelNum = 8;
-        Double averageMips = 4d;
-        Double averagePrice = 4d;
-        Integer volume = 900;
+        Integer volume = 0; // shouldn't be used in this experiment
 
-        Integer budget = MathUtils.intNextUp(parallelNum * volume * averagePrice / averageMips);
+        Integer budget = 5000;
 
         ResourceRequest request = new ResourceRequest(budget, parallelNum, volume, 1d);
         UserPreferenceModel preferences = new UserPreferenceModel();
