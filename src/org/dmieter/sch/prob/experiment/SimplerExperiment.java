@@ -64,13 +64,13 @@ public class SimplerExperiment implements Experiment {
     }
 
     public void runSingleExperiment() {
-        ResourceDomain domain = generateResources(80);
+        ResourceDomain domain = generateResources(100);
         int startTime = 0;
         int finishTime = 200;
         
         
         schedulingController = new SchedulingController(domain);
-        List<ResourceAvailability> resources = generateUtilization(schedulingController, 0.5d, startTime, finishTime);
+        List<ResourceAvailability> resources = generateUtilization(schedulingController, 0.2d /* LOAD SD */, startTime, finishTime);
 
         Job job = generateJobFlow().get(0);
         
@@ -193,13 +193,41 @@ public class SimplerExperiment implements Experiment {
         
         int i = 0;
         for(Resource r : controller.getResourceDomain().getResources()){
-            resources.add(generateUtilization(i, r, load,startTime, endTime));
+            resources.add(generateUtilizationSD(i, r, load,startTime, endTime));
             i++;
         }
         
         return resources;
     }
     
+    private ResourceAvailability generateUtilizationSD(int orderNum, Resource resource, Double sd, 
+                                                            int startTime, int endTime) {
+        
+        // 1. calculating deviation from absolute availability
+        Double load = 0d;
+        if(sd > 0){
+            Distribution d = new NormalEventDistribution(0d, sd);
+            load = Math.abs(d.getSampleValue());
+        }
+        
+        if(load > 1){
+            load = 1d;
+        }
+        
+        // 2. adding uniform event to the resource
+        Event generalEvent = new Event(
+                                        new QuazyUniformDistribution(load),
+                                        startTime, 
+                                        endTime, 
+                                        startTime, 
+                                        EventType.GENERAL);
+        resource.addEvent(generalEvent);
+        
+        return new ResourceAvailability(orderNum, resource, 1-load);
+        
+    }
+    
+    @Deprecated
     private ResourceAvailability generateUtilization(int orderNum, Resource resource, Double load, 
                                                             int startTime, int endTime) {
         
@@ -211,7 +239,7 @@ public class SimplerExperiment implements Experiment {
         
         
         // 2. calculating deviation from absolute availability
-        Distribution d = new NormalEventDistribution(0d, 0.2d);
+        Distribution d = new NormalEventDistribution(0d, 0.1d);
         
         Double deviation = Math.abs(d.getSampleValue());
         if(deviation > 1){
@@ -239,10 +267,10 @@ public class SimplerExperiment implements Experiment {
 
     private List<Job> generateJobFlow() {
 
-        Integer parallelNum = 8;
+        Integer parallelNum = 10;
         Integer volume = 0; // shouldn't be used in this experiment
 
-        Integer budget = 5000;
+        Integer budget = 7000;
 
         ResourceRequest request = new ResourceRequest(budget, parallelNum, volume, 1d);
         UserPreferenceModel preferences = new UserPreferenceModel();
