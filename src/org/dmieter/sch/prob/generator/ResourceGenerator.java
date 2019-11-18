@@ -9,6 +9,7 @@ import org.dmieter.sch.prob.resources.Resource;
 import org.dmieter.sch.prob.resources.ResourceDomain;
 import project.math.distributions.DistributionGenerator;
 import project.math.distributions.UniformFacade;
+import project.math.utils.MathUtils;
 
 /**
  *
@@ -68,7 +69,7 @@ public class ResourceGenerator extends Generator {
 
         if (intMIPS != null) {
             hwMutationFactor = genHardwareMutationIndex.getRandom();
-            resource.mips = getMutatedIntervalValue(intMIPS, hwIndex, hwMutationFactor);
+            resource.mips = MathUtils.nextUp(getMutatedIntervalValue(intMIPS, hwIndex, hwMutationFactor));
         }
 
         if (intRAM != null) {
@@ -79,6 +80,7 @@ public class ResourceGenerator extends Generator {
         if (intPrice != null) {
             double priceMutationFactor = genPriceMutationIndex.getRandom();
             resource.price = getMutatedIntervalValue(intPrice, hwIndex, priceMutationFactor);
+            resource.price *= Math.exp(0.05 * (resource.mips - 1));
         }
 
         return resource;

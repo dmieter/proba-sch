@@ -18,6 +18,7 @@ import org.dmieter.sch.prob.scheduler.AvaScheduler;
 import org.dmieter.sch.prob.scheduler.AvaSchedulerSettings;
 import org.dmieter.sch.prob.scheduler.Scheduler;
 import org.dmieter.sch.prob.scheduler.SchedulerSettings;
+import org.dmieter.sch.prob.scheduler.allocator.GreedyMaxPLimitedAllocator;
 import org.dmieter.sch.prob.scheduler.criteria.AvailableProbabilityCriterion;
 import org.dmieter.sch.prob.scheduler.criteria.SumCostCriterion;
 import org.dmieter.sch.prob.scheduler.criteria.UserPreferenceModel;
@@ -54,7 +55,7 @@ public class SimpleExperiment implements Experiment {
     }
 
     public void runSingleExperiment() {
-        ResourceDomain domain = generateResources(50);
+        ResourceDomain domain = generateResources(80);
         
         schedulingController = new SchedulingController(domain);
         generateUtilization(schedulingController);
@@ -85,7 +86,7 @@ public class SimpleExperiment implements Experiment {
         ResourceDomain domain2 = domain.copy();
         Job job2 = job.copy();
         scheduler.flush();
-        settings.setSchedulingMode(AvaSchedulerSettings.SchMode.GREEDY_SIMPLE);
+        settings.setSchedulingMode(AvaSchedulerSettings.SchMode.KNAPSACK);
         
         knapsackT = System.nanoTime();
         scheduler.schedule(job2, domain2, startTime, settings);
@@ -129,13 +130,13 @@ public class SimpleExperiment implements Experiment {
         }
         
         
-        if (job2.getResourcesAllocation() != null) {
-            job2.getResourcesAllocation().getStartEvent().setEventColor(Color.red);
-            if (job2.getResourcesAllocation().getExecutionEvent() != null) {
-                job2.getResourcesAllocation().getExecutionEvent().setEventColor(Color.green);
+        if (job1.getResourcesAllocation() != null) {
+            job1.getResourcesAllocation().getStartEvent().setEventColor(Color.red);
+            if (job1.getResourcesAllocation().getExecutionEvent() != null) {
+                job1.getResourcesAllocation().getExecutionEvent().setEventColor(Color.green);
             }
-            job2.getResourcesAllocation().getFinishEvent().setEventColor(Color.red);
-            schedulingController.scheduleJob(job2);
+            job1.getResourcesAllocation().getFinishEvent().setEventColor(Color.red);
+            schedulingController.scheduleJob(job1);
         }
     }
 
@@ -150,17 +151,19 @@ public class SimpleExperiment implements Experiment {
                         .append(knapsackStats.getData())
                         .append(compareStats.getData())
                         .append(compareStats.getDetailedData("P"))
+                        .append("\nGreedy wins: " + GreedyMaxPLimitedAllocator.bestWin + " : " + GreedyMaxPLimitedAllocator.greedyWin + " : " + GreedyMaxPLimitedAllocator.mincostWin)
+                        .append("\nGreedy Len: " + GreedyMaxPLimitedAllocator.bestLen + " : " + GreedyMaxPLimitedAllocator.greedyLen + " : " + GreedyMaxPLimitedAllocator.mincostLen)
                         .toString();
     }
 
     private ResourceDomain generateResources(int resNumber) {
 
         ResourceGenerator resGen = new ResourceGenerator();
-        resGen.intMIPS = new Interval(1, 8);
+        resGen.intMIPS = new Interval(2, 16);
         resGen.intRAM = new Interval(1, 8);
-        resGen.intPrice = new Interval(1, 12);
-        resGen.genPriceMutationIndex = new GaussianFacade(new GaussianSettings(0.7, 1, 1.3));
-        resGen.genHardwareMutationIndex = new GaussianFacade(new GaussianSettings(0.6, 1, 1.2));
+        resGen.intPrice = new Interval(2, 16);
+        resGen.genPriceMutationIndex = new GaussianFacade(new GaussianSettings(0.8, 1, 1.2));
+        resGen.genHardwareMutationIndex = new GaussianFacade(new GaussianSettings(0.8, 1, 1.2));
 
         return resGen.generateResourceDomain(resNumber);
     }
@@ -170,32 +173,33 @@ public class SimpleExperiment implements Experiment {
         UtilizationGenerator uGen = new UtilizationGenerator();
         uGen.intFinishVariability = new Interval(10, 50);
         uGen.intStartVariability = new Interval(1, 10);
-        uGen.intJobLength = new Interval(50, 300);
-        uGen.intLoad = new Interval(0.3, 0.8);
+        uGen.intJobLength = new Interval(30, 200);
+        uGen.intLoad = new Interval(0.3, 0.7);
         uGen.generateUtilization(controller, new Interval(-300, 2500));
         
         //uGen.intResourceEventMean = new Interval(5000, 50000);
         //uGen.generateGlobalEvents(controller, new Interval(0, 5000), Color.PINK); // failure
         
-        uGen.intResourceEventMean = new Interval(1000, 20000);
-        uGen.generateGlobalEvents(controller, new Interval(0, 5000), Color.CYAN); // maintenance
+        uGen.intResourceEventMean = new Interval(0, 3000);
+        uGen.generateGlobalEvents(controller, new Interval(0, 2000), Color.CYAN); // maintenance
 
     }
 
     private List<Job> generateJobFlow() {
 
         Integer parallelNum = 8;
-        Double averageMips = 4.5d;
-        Double averagePrice = 8d;
+        Double averageMips = 9d;
+        Double averagePrice = 14d;
         Integer volume = 600;
 
         Integer budget = MathUtils.intNextUp(parallelNum * volume * averagePrice / averageMips);
+        System.out.println("Budget: " + budget);
 
         ResourceRequest request = new ResourceRequest(budget, parallelNum, volume, 1d);
         UserPreferenceModel preferences = new UserPreferenceModel();
         preferences.setCriterion(new AvailableProbabilityCriterion());
         preferences.setDeadline(1200);
-        preferences.setMinAvailability(0.1);
+        //preferences.setMinAvailability(0.05);
         preferences.setCostBudget(100);
 
         Job job = new RegularJob(request);

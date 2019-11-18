@@ -135,6 +135,9 @@ public class AvaScheduler implements Scheduler {
             return null;  // not enough feasible nodes
         }
 
+        
+        //System.out.println(feasibleResources.size()-job.getResourceRequest().getParallelNum());
+        
         // 1. Retrieveing resources allocation with maximum availability P
         List<ResourceAvailability> selectedResources = null;
         switch (settings.getSchedulingMode()) {

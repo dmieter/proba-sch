@@ -70,7 +70,7 @@ public class SimplerExperiment implements Experiment {
         
         
         schedulingController = new SchedulingController(domain);
-        List<ResourceAvailability> resources = generateUtilization(schedulingController, 0.2d /* LOAD SD */, startTime, finishTime);
+        List<ResourceAvailability> resources = generateUtilization(schedulingController, 0.1d /* LOAD SD */, startTime, finishTime);
 
         Job job = generateJobFlow().get(0);
         
@@ -171,6 +171,7 @@ public class SimplerExperiment implements Experiment {
                         .append(knapsackStats.getData())
                         .append(compareStats.getData())
                         .append(compareStats.getDetailedData("P"))
+                        .append("Greedy wins: " + GreedyMaxPLimitedAllocator.bestWin + " : " + GreedyMaxPLimitedAllocator.greedyWin + " : " + GreedyMaxPLimitedAllocator.mincostWin)
                         .toString();
     }
 

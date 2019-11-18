@@ -14,10 +14,10 @@ public class ExperimentRunner {
     }
 
     private static void runExperiment() {
-        //Experiment exp = new SimpleExperiment();
-        Experiment exp = new SimplerExperiment();
+        Experiment exp = new SimpleExperiment();
+//        Experiment exp = new SimplerExperiment();
         
-        exp.run(1000);
+        exp.run(1);
         System.out.println(exp.printResults());
         DomainVisualizerFrame frame = new DomainVisualizerFrame(exp.getSchedulingController().getResourceDomain());
         frame.setVisible(true);
