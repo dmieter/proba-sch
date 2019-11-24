@@ -67,7 +67,7 @@ public class SimpleExperimentTransition implements Experiment {
 
         schedulingController = new SchedulingController(domain);
         generateUtilization(schedulingController);
-        generateUtilization(schedulingController, 0.02d /* LOAD SD */, -100, 1000);
+        generateUtilization(schedulingController, 0.02d /* LOAD SD */, -1000, 1000);
 
         Job job = generateJobFlow().get(0);
 
@@ -185,9 +185,9 @@ public class SimpleExperimentTransition implements Experiment {
     private ResourceDomain generateResources(int resNumber) {
 
         ResourceGenerator resGen = new ResourceGenerator();
-        resGen.intMIPS = new Interval(9, 9);
+        resGen.intMIPS = new Interval(1, 9);
         resGen.intRAM = new Interval(1, 8);
-        resGen.intPrice = new Interval(8, 10);
+        resGen.intPrice = new Interval(1, 9);
         resGen.genPriceMutationIndex = new GaussianFacade(new GaussianSettings(0.5, 1, 1.5));
         resGen.genHardwareMutationIndex = new GaussianFacade(new GaussianSettings(0.6, 1, 1.2));
 
@@ -197,11 +197,11 @@ public class SimpleExperimentTransition implements Experiment {
     private void generateUtilization(SchedulingController controller) {
 
         UtilizationGenerator uGen = new UtilizationGenerator();
-        uGen.intFinishVariability = new Interval(50, 100);
+        uGen.intFinishVariability = new Interval(100, 200);
         uGen.intStartVariability = new Interval(1, 10);
-        uGen.intJobLength = new Interval(30, 200);
-        uGen.intLoad = new Interval(0.1, 0.5);
-        uGen.generateUtilization(controller, new Interval(-300, 2500));
+        uGen.intJobLength = new Interval(100, 300);
+        uGen.intLoad = new Interval(0.1, 0.3);
+        uGen.generateUtilization(controller, new Interval(-1000, 2500));
 
         //uGen.intResourceEventMean = new Interval(5000, 50000);
         //uGen.generateGlobalEvents(controller, new Interval(0, 5000), Color.PINK); // failure
@@ -258,7 +258,7 @@ public class SimpleExperimentTransition implements Experiment {
         Integer volume = 300;
 
         Integer budget = MathUtils.intNextUp(parallelNum * volume * averagePrice / averageMips);
-        budget = 1750;
+        budget = 1200;
         System.out.println("Budget: " + budget);
 
         ResourceRequest request = new ResourceRequest(budget, parallelNum, volume, 1d);
