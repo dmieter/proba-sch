@@ -1,6 +1,7 @@
 package org.dmieter.sch.prob.graphics;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -26,6 +27,7 @@ public class DomainVisualizerPanel extends JPanel {
 
     public DomainVisualizerPanel(ResourceDomain domain) {
         this.domain = domain;
+        this.setPreferredSize(new Dimension(5000, (domain.getResources().size() + 1)*RESOURCE_HEIGHT));
     }
 
     private void doDrawing(Graphics g) {

@@ -159,9 +159,9 @@ public class SimpleExperiment implements Experiment {
     private ResourceDomain generateResources(int resNumber) {
 
         ResourceGenerator resGen = new ResourceGenerator();
-        resGen.intMIPS = new Interval(2, 16);
+        resGen.intMIPS = new Interval(1, 10);
         resGen.intRAM = new Interval(1, 8);
-        resGen.intPrice = new Interval(2, 16);
+        resGen.intPrice = new Interval(1, 10);
         resGen.genPriceMutationIndex = new GaussianFacade(new GaussianSettings(0.8, 1, 1.2));
         resGen.genHardwareMutationIndex = new GaussianFacade(new GaussianSettings(0.8, 1, 1.2));
 
