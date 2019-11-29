@@ -186,7 +186,7 @@ public class SimpleExperimentTransition implements Experiment {
         ResourceGenerator resGen = new ResourceGenerator();
         resGen.intMIPS = new Interval(1, 10);
         resGen.intRAM = new Interval(1, 8);
-        resGen.intPrice = new Interval(1, 12);
+        resGen.intPrice = new Interval(1, 20);
         resGen.genPriceMutationIndex = new GaussianFacade(new GaussianSettings(0.7, 1, 1.3));
         resGen.genHardwareMutationIndex = new GaussianFacade(new GaussianSettings(0.6, 1, 1.2));
 
@@ -194,17 +194,17 @@ public class SimpleExperimentTransition implements Experiment {
     }
 
     private void generateUtilizationForExperiment(SchedulingController controller) {
-        //generateUtilizationJobs(schedulingController);
-        generateUtilizationGlobal(schedulingController, 0.1d /* LOAD SD */, -1000, 1000);
+        generateUtilizationJobs(schedulingController);
+        generateUtilizationGlobal(schedulingController, 0.05d /* LOAD SD */, -1000, 1000);
     }
     
     private void generateUtilizationJobs(SchedulingController controller) {
 
         UtilizationGenerator uGen = new UtilizationGenerator();
-        uGen.intFinishVariability = new Interval(10, 100);
-        uGen.intStartVariability = new Interval(1, 30);
+        uGen.intFinishVariability = new Interval(1, 100);
+        uGen.intStartVariability = new Interval(1, 20);
         uGen.intJobLength = new Interval(100, 300);
-        uGen.intLoad = new Interval(0.2, 0.4);
+        uGen.intLoad = new Interval(0.1, 0.4);
         uGen.generateUtilization(controller, new Interval(-1000, 2500));
 
         //uGen.intResourceEventMean = new Interval(5000, 50000);
@@ -262,13 +262,13 @@ public class SimpleExperimentTransition implements Experiment {
         Integer volume = 200;
 
         Integer budget = MathUtils.intNextUp(parallelNum * volume * averagePrice / averageMips);
-        budget = 1500;
+        budget = 4500;
         System.out.println("Budget: " + budget);
 
         ResourceRequest request = new ResourceRequest(budget, parallelNum, volume, 1d);
         UserPreferenceModel preferences = new UserPreferenceModel();
         preferences.setCriterion(new AvailableProbabilityCriterion());
-        preferences.setDeadline(100);
+        preferences.setDeadline(300);
         preferences.setMinAvailability(0.1);
         preferences.setCostBudget(100);
 
