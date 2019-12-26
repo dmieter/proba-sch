@@ -180,7 +180,7 @@ public class EvenSimplerExperiment implements Experiment {
         ResourceGenerator resGen = new ResourceGenerator();
         resGen.intMIPS = new Interval(1, 8);
         resGen.intRAM = new Interval(1, 8);
-        resGen.intPrice = new Interval(1, 12);
+        resGen.intPrice = new Interval(6, 12);
         resGen.genPriceMutationIndex = new GaussianFacade(new GaussianSettings(0.7, 1, 1.3));
         resGen.genHardwareMutationIndex = new GaussianFacade(new GaussianSettings(0.6, 1, 1.2));
 
@@ -271,7 +271,7 @@ public class EvenSimplerExperiment implements Experiment {
         Integer parallelNum = 8;
         Integer volume = 0; // shouldn't be used in this experiment
 
-        Integer budget = 5000;
+        Integer budget = 15000;
 
         ResourceRequest request = new ResourceRequest(budget, parallelNum, volume, 1d);
         UserPreferenceModel preferences = new UserPreferenceModel();
