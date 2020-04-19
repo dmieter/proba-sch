@@ -89,7 +89,7 @@ public class AvaScheduler implements Scheduler {
         }
     }
 
-    private Allocation findBestAllocation(Job job, ResourceDomain domain, int startTime, int deadline) {
+    protected Allocation findBestAllocation(Job job, ResourceDomain domain, int startTime, int deadline) {
         TreeMap<Integer, List<Resource>> performanceOptions
                 = preparePerformanceOptions(domain, job);
 
@@ -114,7 +114,7 @@ public class AvaScheduler implements Scheduler {
         return bestLocalAllocation;
     }
   
-    private Allocation findBestAllocation(Job job, List<Resource> availableResources, int startTime, Integer length) {
+    protected Allocation findBestAllocation(Job job, List<Resource> availableResources, int startTime, Integer length) {
         int endTime = startTime + length;
 
         // Each resource may be selected to run job (no slots), 
@@ -187,7 +187,7 @@ public class AvaScheduler implements Scheduler {
         return null;
     }
 
-    private void prepareJobAllocation(Job job, Allocation allocation) {
+    protected void prepareJobAllocation(Job job, Allocation allocation) {
         ResourcesAllocation jobAllocation = new ResourcesAllocation();
         jobAllocation.setResources(allocation.resources);
         jobAllocation.setStartTime(allocation.startTime);
@@ -196,7 +196,7 @@ public class AvaScheduler implements Scheduler {
         JobController.generateEvents(job);
     }
 
-    private TreeMap<Integer, List<Resource>>
+    protected TreeMap<Integer, List<Resource>>
             preparePerformanceOptions(ResourceDomain domain, Job job) {
 
         Map<Integer, List<Resource>> performanceOptions = new HashMap<>();
@@ -215,7 +215,7 @@ public class AvaScheduler implements Scheduler {
         return new TreeMap<>(performanceOptions);
     }
 
-    private void logSchedulingResults(Allocation allocation) {
+    protected void logSchedulingResults(Allocation allocation) {
         if (logTimelineStats) {
             if (allocation == null || allocation.criterionValue == null) {
                 AvaScheduler.schedulingTimeline.addValue(settings.getSchedulingMode().name(), 0d);
@@ -225,7 +225,7 @@ public class AvaScheduler implements Scheduler {
         }
     }
 
-    private class Allocation {
+    protected class Allocation {
 
         int startTime;
         int endTime;

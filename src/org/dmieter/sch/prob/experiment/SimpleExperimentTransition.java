@@ -63,7 +63,7 @@ public class SimpleExperimentTransition implements Experiment {
     }
 
     public void runSingleExperiment() {
-        ResourceDomain domain = generateResources(80);
+        ResourceDomain domain = generateResources(30);
 
         schedulingController = new SchedulingController(domain);
         generateUtilizationForExperiment(schedulingController);
@@ -256,10 +256,10 @@ public class SimpleExperimentTransition implements Experiment {
 
     private List<Job> generateJobFlow() {
 
-        Integer parallelNum = 8;
+        Integer parallelNum = 4;
         Double averageMips = 9d;
         Double averagePrice = 14d;
-        Integer volume = 200;
+        Integer volume = 400;
 
         Integer budget = MathUtils.intNextUp(parallelNum * volume * averagePrice / averageMips);
         budget = 4500;
@@ -268,7 +268,7 @@ public class SimpleExperimentTransition implements Experiment {
         ResourceRequest request = new ResourceRequest(budget, parallelNum, volume, 1d);
         UserPreferenceModel preferences = new UserPreferenceModel();
         preferences.setCriterion(new AvailableProbabilityCriterion());
-        preferences.setDeadline(300);
+        preferences.setDeadline(800);
         preferences.setMinAvailability(0.1);
         preferences.setCostBudget(100);
 
