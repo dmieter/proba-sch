@@ -271,7 +271,7 @@ public class SimplerExperiment implements Experiment {
         Integer parallelNum = 10;
         Integer volume = 0; // shouldn't be used in this experiment
 
-        Integer budget = 7000;
+        Integer budget = 10000;
 
         ResourceRequest request = new ResourceRequest(budget, parallelNum, volume, 1d);
         UserPreferenceModel preferences = new UserPreferenceModel();

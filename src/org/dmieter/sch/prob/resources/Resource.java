@@ -25,6 +25,23 @@ public class Resource {
         this.description = description;
     }
     
+    public Long id_View(){
+           return id;
+    }
+    
+    public double mips_View(){
+           return description.mips;
+    }
+    
+    public double ram_View(){
+           return description.ram;
+    }
+    public double price_View(){
+           return description.price;
+    }
+    public double hwIndex_View(){
+           return description.hwIndex;
+    }
     public void addEvent(Event event){
         events.add(event);
         Collections.sort(events, Comparator.comparing(Event::getEventTime));
