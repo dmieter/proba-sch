@@ -271,7 +271,7 @@ public class EvenSimplerExperiment implements Experiment {
         Integer parallelNum = 8;
         Integer volume = 0; // shouldn't be used in this experiment
 
-        Integer budget = 10300;
+        Integer budget = 15300;
 
         ResourceRequest request = new ResourceRequest(budget, parallelNum, volume, 1d);
         UserPreferenceModel preferences = new UserPreferenceModel();

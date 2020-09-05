@@ -61,7 +61,7 @@ public class AvaScheduler implements Scheduler {
         // searching for best allocation in time
         for (int t = currentTime; t < deadline; t += settings.getScanDelta()) {
 
-            if (t % 200 == 0) {
+            if (t % 50 == 0) {
                 System.out.println("Time scanned: " + t);
             }
 
@@ -231,5 +231,9 @@ public class AvaScheduler implements Scheduler {
         int endTime;
         Double criterionValue;
         List<Resource> resources;
+        
+        public Double getCriterionValue(){
+            return criterionValue;
+        }
     }
 }
