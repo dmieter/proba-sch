@@ -96,10 +96,12 @@ public class SimpleExperimentWithOpt implements Experiment {
         ResourceDomain domain2 = domain.copy();
         Job job2 = job.copy();
         schedulerOpt.flush();
+        //scheduler.flush();
         settings.setSchedulingMode(AvaSchedulerSettings.SchMode.GREEDY_LIMITED);
 
         optT = System.nanoTime();
         schedulerOpt.schedule(job2, domain2, startTime, settings);
+        //scheduler.schedule(job2, domain2, startTime, settings);
         optT = System.nanoTime() - optT;
 
         if (job2.getResourcesAllocation() == null) {
@@ -125,6 +127,7 @@ public class SimpleExperimentWithOpt implements Experiment {
             compareStats.addValue("P", Math.abs(fullP - optP));
             compareStats.addValue("Start Time", Math.abs(job1.getResourcesAllocation().getStartTime() - job2.getResourcesAllocation().getStartTime())+0.0);
             compareStats.addValue("Finish Time", Math.abs(job1.getResourcesAllocation().getEndTime() - job2.getResourcesAllocation().getEndTime())+0.0);
+            compareStats.addValue("Working Time", Math.abs(fullT - optT)/1000000000+0.0);
         }
 
         if (job2.getResourcesAllocation() != null) {

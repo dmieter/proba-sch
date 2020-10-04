@@ -2,8 +2,10 @@ package org.dmieter.sch.prob.scheduler;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import org.dmieter.sch.prob.job.Job;
 import org.dmieter.sch.prob.resources.ResourceDomain;
+import project.math.utils.MathUtils;
 
 /**
  *
@@ -21,7 +23,7 @@ public class AvaSchedulerOpt extends AvaScheduler {
 
         Map<Integer, Allocation> startPoints = new HashMap<>();
         Map<Integer, Allocation> knownPoints = new HashMap<>();
-        Map<Integer, Allocation> maxPoints = new HashMap<>();
+        Map<Integer, Allocation> maxPoints = new TreeMap<>();
         Integer step = Math.round((deadline - currentTime) / this.startPoints);
 
         for (int t = currentTime; t < deadline; t += step) {
@@ -35,23 +37,32 @@ public class AvaSchedulerOpt extends AvaScheduler {
         
         knownPoints.putAll(startPoints);
         
+        int searchRadius = MathUtils.intNextUp((deadline - currentTime)*0.75/step);   //
         for(Map.Entry<Integer, Allocation> searchTime : startPoints.entrySet()){
-            findNextMaximum(searchTime.getKey(), deadline, job, domain, knownPoints, maxPoints, 50);
+            findNextMaximum(searchTime.getKey(), deadline, job, domain, knownPoints, maxPoints, searchRadius);
         }
 
         if(maxPoints.isEmpty()){
             return false;
         }
+
+        // retrieveing maximum from all local maximum points        
+        Allocation maxAllocation = maxPoints.values().iterator().next();
+        System.out.println("Local maximums:");
+        for(Map.Entry<Integer, Allocation> result : maxPoints.entrySet()){
+            System.out.println(result.getKey()+": " + result.getValue().criterionValue);
+            if(result.getValue().criterionValue > maxAllocation.criterionValue){
+                maxAllocation = result.getValue();
+            }
+        }
         
-        Allocation maxAllocation = null;
-        
-        System.out.println("Resulting probability: " + maxAllocation.criterionValue);
+        System.out.println("Resulting probability: " + maxAllocation.criterionValue + " at " + maxAllocation.startTime);
         prepareJobAllocation(job, maxAllocation);
         return true;
     }
 
-    protected Allocation findNextMaximum(Integer startTime, Integer deadline, Job job, ResourceDomain domain,
-            Map<Integer, Allocation> knownPoints, Map<Integer, Allocation> maxPoints, int searchDiameter) {
+    protected boolean findNextMaximum(Integer startTime, Integer deadline, Job job, ResourceDomain domain,
+            Map<Integer, Allocation> knownPoints, Map<Integer, Allocation> maxPoints, int searchRadius) {
 
         Allocation leftAllocation = getAllocationByTime(startTime, deadline, job, domain, knownPoints);
 
@@ -59,31 +70,39 @@ public class AvaSchedulerOpt extends AvaScheduler {
         
         if(direction == 0){ // we have local maximum at startTime
             maxPoints.put(startTime, leftAllocation);
-            return leftAllocation;
+            return true;
         }
 
         // search
-        for (int t = delta; t <= searchDiameter; t += delta) {
+        for (int t = delta; t <= searchRadius; t += delta) {
 
-            Allocation rightAllocation = findBestAllocation(job, domain, startTime + direction*t, deadline);
+            Allocation rightAllocation = getAllocationByTime(startTime + direction*t, deadline, job, domain, knownPoints);
 
             if (rightAllocation.criterionValue > leftAllocation.criterionValue) {
                 leftAllocation = rightAllocation;
                 continue;  // continue going to maximum
             } else {
-                Allocation maxAllocation = findMaximumInInterval(leftAllocation, rightAllocation, job, domain, deadline, knownPoints);
+                Allocation maxAllocation = null;
+                
+                // we need to provide real left and right allocations as an interval
+                if(direction > 0){
+                    maxAllocation = findMaximumInInterval(leftAllocation, rightAllocation, job, domain, deadline, knownPoints);
+                } else {
+                    maxAllocation = findMaximumInInterval(rightAllocation, leftAllocation, job, domain, deadline, knownPoints);
+                }
+                
                 if(maxAllocation == null) {
                     throw new IllegalStateException("Unable to find middle maximum");
                 }
-                knownPoints.put(maxAllocation.startTime, maxAllocation);
                 maxPoints.put(maxAllocation.startTime, maxAllocation);
                 
                 return true;
             }
-
         }
-
-        return false;
+        
+        // if there is no maximum in the interval - return interval edge as maximum
+        maxPoints.put(leftAllocation.startTime, leftAllocation);
+        return true;
     }
     
     protected int getMaxDirection(int middlePoint, Integer deadline, Job job, ResourceDomain domain, Map<Integer, Allocation> knownPoints){
@@ -111,6 +130,10 @@ public class AvaSchedulerOpt extends AvaScheduler {
             return knownPoints.get(timePoint);
         } else {
             Allocation newAllocation = findBestAllocation(job, domain, timePoint, deadline);
+            if(newAllocation == null){
+                newAllocation = new Allocation();
+                newAllocation.criterionValue = Double.NEGATIVE_INFINITY;
+            }
             knownPoints.put(timePoint, newAllocation);
             return newAllocation;
         }
@@ -118,6 +141,15 @@ public class AvaSchedulerOpt extends AvaScheduler {
 
     protected Allocation findMaximumInInterval(Allocation leftAllocation, Allocation rightAllocation,
             Job job, ResourceDomain domain, Integer deadline, Map<Integer, Allocation> knownPoints) {
+
+        // check if search interval is really small
+        if(rightAllocation.startTime - leftAllocation.startTime == 1){
+            if(leftAllocation.criterionValue >= rightAllocation.criterionValue){
+                return leftAllocation;
+            } else {
+                return rightAllocation;
+            }
+        }
 
         int middleTime = getMiddleTime(leftAllocation.startTime, rightAllocation.startTime);
         Allocation middleAllocation = getAllocationByTime(middleTime, deadline, job, domain, knownPoints);

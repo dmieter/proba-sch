@@ -62,11 +62,15 @@ public class AvaScheduler implements Scheduler {
         for (int t = currentTime; t < deadline; t += settings.getScanDelta()) {
 
             if (t % 50 == 0) {
-                System.out.println("Time scanned: " + t);
+                //System.out.println("Time scanned: " + t);
             }
 
             Allocation curAllocation = findBestAllocation(job, domain, t, deadline);
             logSchedulingResults(curAllocation);
+
+            if (curAllocation != null) {
+                System.out.println(t + ": " + curAllocation.criterionValue);
+            }
 
             if (curAllocation != null
                     && curAllocation.criterionValue > bestCriterionValue) {
@@ -113,7 +117,7 @@ public class AvaScheduler implements Scheduler {
 
         return bestLocalAllocation;
     }
-  
+
     protected Allocation findBestAllocation(Job job, List<Resource> availableResources, int startTime, Integer length) {
         int endTime = startTime + length;
 
@@ -135,16 +139,14 @@ public class AvaScheduler implements Scheduler {
             return null;  // not enough feasible nodes
         }
 
-        
         //System.out.println(feasibleResources.size()-job.getResourceRequest().getParallelNum());
-        
         // 1. Retrieveing resources allocation with maximum availability P
         List<ResourceAvailability> selectedResources = null;
         switch (settings.getSchedulingMode()) {
             case MIN_COST:
                 selectedResources = MinCostAllocator.allocateResources(job, feasibleResources, startTime, endTime);
                 break;
-            
+
             case GREEDY_SIMPLE:
                 selectedResources = GreedyMaxPAllocator.allocateResources(job, feasibleResources, startTime, endTime);
                 break;
@@ -231,8 +233,8 @@ public class AvaScheduler implements Scheduler {
         int endTime;
         Double criterionValue;
         List<Resource> resources;
-        
-        public Double getCriterionValue(){
+
+        public Double getCriterionValue() {
             return criterionValue;
         }
     }
