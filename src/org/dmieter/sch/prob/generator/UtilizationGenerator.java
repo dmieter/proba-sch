@@ -81,7 +81,7 @@ public class UtilizationGenerator extends Generator {
         
         // 1. If next event allocates resources - check if we can start before
         if(nextEvent.get().getType() == EventType.ALLOCATING_RESOURCE 
-                && nextEvent.get().getEndTime() > startTime + jobLength){
+                && nextEvent.get().getStartTime() > startTime + jobLength){
             
             return assignJob(resource, startTime, jobLength);
         }

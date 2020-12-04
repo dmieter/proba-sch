@@ -1,6 +1,7 @@
 package org.dmieter.sch.prob.job;
 
 import org.dmieter.sch.prob.distribution.Distribution;
+import org.dmieter.sch.prob.distribution.LongTailNormalEventDistribution;
 import org.dmieter.sch.prob.distribution.NormalEventDistribution;
 import org.dmieter.sch.prob.distribution.QuazyUniformDistribution;
 import org.dmieter.sch.prob.events.Event;
@@ -25,6 +26,14 @@ public class JobController {
         
         Event startEvent = generateJobStartEvent(job);
         Event finishEvent = generateJobFinishEvent(job);
+        
+        // for more beautiful jobs generation
+        while(startEvent.getEndTime() > finishEvent.getStartTime()){
+            job.setStartVariability(job.getStartVariability()*0.95);
+            job.setFinishVariability(job.getFinishVariability()*0.95);
+            startEvent = generateJobStartEvent(job);
+            finishEvent = generateJobFinishEvent(job);
+        }
         
         if(startEvent.getEndTime() > finishEvent.getStartTime()){
             // start time and end time variabilities should be ok with job length
@@ -72,13 +81,13 @@ public class JobController {
             return generateDummyGeneralEvent(job.getResourcesAllocation().getEndTime());
         }
         
-        Distribution distribution = new NormalEventDistribution(job.getResourcesAllocation().getEndTime().doubleValue(), 
+        Distribution distribution = new LongTailNormalEventDistribution(job.getResourcesAllocation().getEndTime().doubleValue(), 
                                                                 job.finishVariability);
 
         // N epsilon interval for process to finish                                                       
         Integer halfIntervalLength = MathUtils.intNextUp(SD_INTERVAL_COEFFICIENT * job.finishVariability);
         Integer leftTime = job.getResourcesAllocation().getEndTime() - halfIntervalLength;  
-        Integer rightTime = job.getResourcesAllocation().getEndTime() + halfIntervalLength;
+        Integer rightTime = job.getResourcesAllocation().getEndTime() + halfIntervalLength*20;
         
         return new Event(distribution, leftTime, rightTime, job.getResourcesAllocation().getEndTime(), EventType.RELEASING_RESOURCE);
     }

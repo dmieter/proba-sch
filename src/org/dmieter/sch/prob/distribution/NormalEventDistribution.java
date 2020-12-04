@@ -18,6 +18,10 @@ public class NormalEventDistribution extends Distribution {
         this.sd = sd;
     }
 
+    protected void updateDistribution(){
+        distribution = new NormalDistribution(mean, sd);
+    }
+    
     @Override
     public Double getProbability(Integer t) {
         return distribution.cumulativeProbability(t);
@@ -31,19 +35,19 @@ public class NormalEventDistribution extends Distribution {
     @Override
     public void setMean(Double mean) {
         this.mean = mean;
-        distribution = new NormalDistribution(mean, sd);
+        updateDistribution();
     }
     
     @Override
     public void shiftMean(Double shiftValue) {
         this.mean += shiftValue;
-        distribution = new NormalDistribution(mean, sd);
+        updateDistribution();
     }
     
     @Override
     public void updateVariability(Double coef) {
         this.sd *= coef;
-        distribution = new NormalDistribution(mean, sd);
+        updateDistribution();
     }
 
     /**

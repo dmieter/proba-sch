@@ -171,10 +171,10 @@ public class SimpleExperimentWithOpt implements Experiment {
     private void generateUtilizationJobs(SchedulingController controller) {
 
         UtilizationGenerator uGen = new UtilizationGenerator();
-        uGen.intFinishVariability = new Interval(1, 100);
-        uGen.intStartVariability = new Interval(1, 20);
-        uGen.intJobLength = new Interval(100, 300);
-        uGen.intLoad = new Interval(0.1, 0.4);
+        uGen.intFinishVariability = new Interval(10, 40);
+        uGen.intStartVariability = new Interval(20, 50);
+        uGen.intJobLength = new Interval(200, 700);
+        uGen.intLoad = new Interval(0.4, 0.8);
         uGen.generateUtilization(controller, new Interval(-1000, 2500));
 
         //uGen.intResourceEventMean = new Interval(5000, 50000);
