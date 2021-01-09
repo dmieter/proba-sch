@@ -43,13 +43,18 @@ import project.math.utils.MathUtils;
 public class SimpleExperimentWithOpt implements Experiment {
 
     private Scheduler scheduler;
-    private Scheduler schedulerOpt;
+    private AvaSchedulerOpt schedulerOpt;
     private AvaSchedulerSettings settings;
 
     private SchedulingController schedulingController;
 
     private final ResourcesAllocationStats fullScanStats = new ResourcesAllocationStats("FULL SCAN");
-    private final ResourcesAllocationStats optStats = new ResourcesAllocationStats("OPT");
+    private final ResourcesAllocationStats optStats1 = new ResourcesAllocationStats("OPT 1");
+    private final ResourcesAllocationStats optStats10 = new ResourcesAllocationStats("OPT 5");
+    private final ResourcesAllocationStats optStats30 = new ResourcesAllocationStats("OPT 10");
+    private final ResourcesAllocationStats optStats60 = new ResourcesAllocationStats("OPT 20");
+    private final ResourcesAllocationStats optStats100 = new ResourcesAllocationStats("OPT 50");
+    private final ResourcesAllocationStats optStats200 = new ResourcesAllocationStats("OPT 100");
     private final NamedStats compareStats = new NamedStats("COMPARISON");
 
     @Override
@@ -63,7 +68,7 @@ public class SimpleExperimentWithOpt implements Experiment {
     }
 
     public void runSingleExperiment() {
-        ResourceDomain domain = generateResources(30);
+        ResourceDomain domain = generateResources(64);
 
         schedulingController = new SchedulingController(domain);
         generateUtilizationForExperiment(schedulingController);
@@ -73,46 +78,137 @@ public class SimpleExperimentWithOpt implements Experiment {
         Integer startTime = 0;
 
         boolean success = true;
-        long fullT, optT;
+        long fullT, optT1, optT10, optT30, optT60, optT100, optT200;
 
         /* FULLSCAN SCHEDULING */
         System.out.println("FULLSCAN");
-        ResourceDomain domain1 = domain.copy();
-        Job job1 = job.copy();
+        ResourceDomain domainf = domain.copy();
+        Job jobf = job.copy();
         scheduler.flush();
         settings.setSchedulingMode(AvaSchedulerSettings.SchMode.GREEDY_LIMITED);
 
         fullT = System.nanoTime();
-        scheduler.schedule(job1, domain1, startTime, settings);
+        scheduler.schedule(jobf, domainf, startTime, settings);
         fullT = System.nanoTime() - fullT;
 
-        if (job1.getResourcesAllocation() == null) {
+        if (jobf.getResourcesAllocation() == null) {
             fullScanStats.logFailedExperiment();
             success = false;
         }
 
-        /* OPT SCHEDULING */
-        System.out.println("OPT");
-        ResourceDomain domain2 = domain.copy();
-        Job job2 = job.copy();
+        /* OPT SCHEDULING 1*/
+        System.out.println("OPT 1");
+        ResourceDomain domain1 = domain.copy();
+        Job job1 = job.copy();
+        //schedulerOpt.flush();
+        scheduler.flush();
+        schedulerOpt.startPoints = 1;
+        settings.setSchedulingMode(AvaSchedulerSettings.SchMode.KNAPSACK);
+
+        optT1 = System.nanoTime();
+        //schedulerOpt.schedule(job1, domain1, startTime, settings);
+        scheduler.schedule(job1, domain1, startTime, settings);
+        optT1 = System.nanoTime() - optT1;
+        
+        if (job1.getResourcesAllocation() == null) {
+            optStats1.logFailedExperiment();
+            success = false;
+        }
+        
+        /* OPT SCHEDULING 10*/
+        System.out.println("OPT 5");
+        ResourceDomain domain10 = domain.copy();
+        Job job10 = job.copy();
         schedulerOpt.flush();
-        //scheduler.flush();
+        schedulerOpt.startPoints = 5;
         settings.setSchedulingMode(AvaSchedulerSettings.SchMode.GREEDY_LIMITED);
 
-        optT = System.nanoTime();
-        schedulerOpt.schedule(job2, domain2, startTime, settings);
-        //scheduler.schedule(job2, domain2, startTime, settings);
-        optT = System.nanoTime() - optT;
+        optT10 = System.nanoTime();
+        schedulerOpt.schedule(job10, domain10, startTime, settings);
+        optT10 = System.nanoTime() - optT10;
+        
+        if (job10.getResourcesAllocation() == null) {
+            optStats10.logFailedExperiment();
+            success = false;
+        }
+        
+        /* OPT SCHEDULING 30*/
+        System.out.println("OPT 10");
+        ResourceDomain domain30 = domain.copy();
+        Job job30 = job.copy();
+        schedulerOpt.flush();
+        schedulerOpt.startPoints = 10;
+        settings.setSchedulingMode(AvaSchedulerSettings.SchMode.GREEDY_LIMITED);
 
-        if (job2.getResourcesAllocation() == null) {
-            optStats.logFailedExperiment();
+        optT30 = System.nanoTime();
+        schedulerOpt.schedule(job30, domain30, startTime, settings);
+        optT30 = System.nanoTime() - optT30;
+        
+        if (job30.getResourcesAllocation() == null) {
+            optStats30.logFailedExperiment();
+            success = false;
+        }
+        
+        /* OPT SCHEDULING 60*/
+        System.out.println("OPT 20");
+        ResourceDomain domain60 = domain.copy();
+        Job job60 = job.copy();
+        schedulerOpt.flush();
+        schedulerOpt.startPoints = 20;
+        settings.setSchedulingMode(AvaSchedulerSettings.SchMode.GREEDY_LIMITED);
+
+        optT60 = System.nanoTime();
+        schedulerOpt.schedule(job60, domain60, startTime, settings);
+        optT60 = System.nanoTime() - optT60;
+        
+        if (job60.getResourcesAllocation() == null) {
+            optStats60.logFailedExperiment();
+            success = false;
+        }
+        
+        /* OPT SCHEDULING 100*/
+        System.out.println("OPT 50");
+        ResourceDomain domain100 = domain.copy();
+        Job job100 = job.copy();
+        schedulerOpt.flush();
+        schedulerOpt.startPoints = 50;
+        settings.setSchedulingMode(AvaSchedulerSettings.SchMode.GREEDY_LIMITED);
+
+        optT100 = System.nanoTime();
+        schedulerOpt.schedule(job100, domain100, startTime, settings);
+        optT100 = System.nanoTime() - optT100;
+        
+        if (job100.getResourcesAllocation() == null) {
+            optStats100.logFailedExperiment();
+            success = false;
+        }
+        
+        /* OPT SCHEDULING 200*/
+        System.out.println("OPT 100");
+        ResourceDomain domain200 = domain.copy();
+        Job job200 = job.copy();
+        schedulerOpt.flush();
+        schedulerOpt.startPoints = 100;
+        settings.setSchedulingMode(AvaSchedulerSettings.SchMode.GREEDY_LIMITED);
+
+        optT200 = System.nanoTime();
+        schedulerOpt.schedule(job200, domain200, startTime, settings);
+        optT200 = System.nanoTime() - optT200;
+        
+        if (job200.getResourcesAllocation() == null) {
+            optStats200.logFailedExperiment();
             success = false;
         }
 
 
         if (success) {
-            fullScanStats.processAllocation(job1, fullT);
-            optStats.processAllocation(job2, optT);
+            fullScanStats.processAllocation(jobf, fullT);
+            optStats1.processAllocation(job1, optT1);
+            optStats10.processAllocation(job10, optT10);
+            optStats30.processAllocation(job30, optT30);
+            optStats60.processAllocation(job60, optT60);
+            optStats100.processAllocation(job100, optT100);
+            optStats200.processAllocation(job200, optT200);
             
 //            SumCostCriterion costC = new SumCostCriterion();
 //            AvailableProbabilityCriterion probC = new AvailableProbabilityCriterion();
@@ -121,22 +217,22 @@ public class SimpleExperimentWithOpt implements Experiment {
 //            Double knapsackC = costC.getValue(job2.getResourcesAllocation());
 //            compareStats.addValue("C", (knapsackC - greedyC) / knapsackC);
 
-            AvailableProbabilityCriterion probC = new AvailableProbabilityCriterion();
-            Double fullP = probC.getValue(job1.getResourcesAllocation());
-            Double optP = probC.getValue(job2.getResourcesAllocation());
-            compareStats.addValue("P", Math.abs(fullP - optP));
-            compareStats.addValue("Start Time", Math.abs(job1.getResourcesAllocation().getStartTime() - job2.getResourcesAllocation().getStartTime())+0.0);
-            compareStats.addValue("Finish Time", Math.abs(job1.getResourcesAllocation().getEndTime() - job2.getResourcesAllocation().getEndTime())+0.0);
-            compareStats.addValue("Working Time", Math.abs(fullT - optT)/1000000000+0.0);
+            //AvailableProbabilityCriterion probC = new AvailableProbabilityCriterion();
+            //Double fullP = probC.getValue(jobf.getResourcesAllocation());
+            //Double optP = probC.getValue(job2.getResourcesAllocation());
+            //compareStats.addValue("P", Math.abs(fullP - optP));
+            //compareStats.addValue("Start Time", Math.abs(job1.getResourcesAllocation().getStartTime() - job2.getResourcesAllocation().getStartTime())+0.0);
+            //compareStats.addValue("Finish Time", Math.abs(job1.getResourcesAllocation().getEndTime() - job2.getResourcesAllocation().getEndTime())+0.0);
+            //compareStats.addValue("Working Time", Math.abs(fullT - optT)/1000000000+0.0);
         }
 
-        if (job2.getResourcesAllocation() != null) {
-            job2.getResourcesAllocation().getStartEvent().setEventColor(Color.red);
-            if (job2.getResourcesAllocation().getExecutionEvent() != null) {
-                job2.getResourcesAllocation().getExecutionEvent().setEventColor(Color.green);
+        if (job30.getResourcesAllocation() != null) {
+            job30.getResourcesAllocation().getStartEvent().setEventColor(Color.red);
+            if (job30.getResourcesAllocation().getExecutionEvent() != null) {
+                job30.getResourcesAllocation().getExecutionEvent().setEventColor(Color.green);
             }
-            job2.getResourcesAllocation().getFinishEvent().setEventColor(Color.red);
-            schedulingController.scheduleJob(job2);
+            job30.getResourcesAllocation().getFinishEvent().setEventColor(Color.red);
+            schedulingController.scheduleJob(job30);
         }
     }
 
@@ -146,8 +242,19 @@ public class SimpleExperimentWithOpt implements Experiment {
                
                 .append(AvaScheduler.schedulingTimeline.getDetailedData(AvaSchedulerSettings.SchMode.GREEDY_LIMITED.name()))
                 .append(fullScanStats.getData())
-                .append(optStats.getData())
-                .append(compareStats.getData())
+                .append("============================================")
+                .append(optStats1.getData())
+                .append("============================================")
+                .append(optStats10.getData())
+                .append("============================================")
+                .append(optStats30.getData())
+                .append("============================================")
+                .append(optStats60.getData())
+                .append("============================================")
+                .append(optStats100.getData())
+                .append("============================================")
+                .append(optStats200.getData())
+//                .append(compareStats.getData())
                 .toString();
     }
 
@@ -226,21 +333,21 @@ public class SimpleExperimentWithOpt implements Experiment {
 
     private List<Job> generateJobFlow() {
 
-        Integer parallelNum = 4;
+        Integer parallelNum = 6;
         Double averageMips = 9d;
         Double averagePrice = 14d;
-        Integer volume = 400;
+        Integer volume = 600;
 
         Integer budget = MathUtils.intNextUp(parallelNum * volume * averagePrice / averageMips);
-        budget = 4500;
+        budget = 9000;
         System.out.println("Budget: " + budget);
 
         ResourceRequest request = new ResourceRequest(budget, parallelNum, volume, 1d);
         UserPreferenceModel preferences = new UserPreferenceModel();
         preferences.setCriterion(new AvailableProbabilityCriterion());
         preferences.setDeadline(800);
-        preferences.setMinAvailability(0.1);
-        preferences.setCostBudget(100);
+        preferences.setMinAvailability(0.2);
+        //preferences.setCostBudget(100);
 
         Job job = new RegularJob(request);
         job.setStartVariability(2d);

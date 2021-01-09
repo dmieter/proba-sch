@@ -77,7 +77,7 @@ public class JobController {
     
     public static Event generateJobFinishEvent(Job job){
         
-        if(job.finishVariability <= 0d){
+        if(job.finishVariability <= 1d){
             return generateDummyGeneralEvent(job.getResourcesAllocation().getEndTime());
         }
         

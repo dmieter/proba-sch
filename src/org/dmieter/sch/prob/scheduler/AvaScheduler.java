@@ -68,9 +68,7 @@ public class AvaScheduler implements Scheduler {
             Allocation curAllocation = findBestAllocation(job, domain, t, deadline);
             logSchedulingResults(curAllocation);
 
-            if (curAllocation != null) {
-                System.out.println(t + ": " + curAllocation.criterionValue);
-            }
+            System.out.println(t + ": " + (curAllocation != null ? curAllocation.criterionValue : "None"));
 
             if (curAllocation != null
                     && curAllocation.criterionValue > bestCriterionValue) {
@@ -97,6 +95,10 @@ public class AvaScheduler implements Scheduler {
         TreeMap<Integer, List<Resource>> performanceOptions
                 = preparePerformanceOptions(domain, job);
 
+        if(startTime < 0){
+            return null;
+        }
+        
         Double bestCriterionValue = Double.NEGATIVE_INFINITY;
         Allocation bestLocalAllocation = null;
 

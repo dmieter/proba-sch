@@ -18,9 +18,10 @@ public class ExperimentRunner {
 //        Experiment exp = new SimplerExperiment();
 //        Experiment exp = new EvenSimplerExperiment();
 //        Experiment exp = new SimpleExperimentTransition();
-          Experiment exp = new SimpleExperimentWithOpt();
+//          Experiment exp = new SimpleExperimentWithOpt();
+          Experiment exp = new SimpleExperimentOnInterval();
 
-          test();
+          //test();
           
         exp.run(1);
         System.out.println(exp.printResults());
