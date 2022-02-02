@@ -62,12 +62,12 @@ public class SimplerGroupExperiment implements Experiment {
         
         schedulingController = new SchedulingController(domain);
         List<ResourceAvailability> resources = generateUtilization(schedulingController, 0.1d /* LOAD SD */, startTime, finishTime);
-        List<ResourceAvailabilityGroup> groups = groupifyResources(resources);
+        List<ResourceAvailabilityGroup> groups = groupifyResources(resources, 5);
 
-        System.out.println(GroupTreeAllocator.explainProblem(groups, null, startTime, finishTime));
+        System.out.println(GroupTreeAllocator.explainProblem(null, groups, null, startTime, finishTime));
 
 
-        Job job = generateJobFlow().get(0);
+        Job job = generateJobFlow(5).get(0);
 
 
 
@@ -77,7 +77,7 @@ public class SimplerGroupExperiment implements Experiment {
         success = success && result != null;
 
         if(success){
-            System.out.println(GroupTreeAllocator.explainProblem(groups, result, startTime, finishTime));
+            System.out.println(GroupTreeAllocator.explainProblem(job, groups, result, startTime, finishTime));
 
 //            createAllocation(job1, allocation1, startTime, finishTime);
 //            createAllocation(job2, allocation2, startTime, finishTime);
@@ -103,8 +103,8 @@ public class SimplerGroupExperiment implements Experiment {
         
     }
 
-    private List<ResourceAvailabilityGroup> groupifyResources(List<ResourceAvailability> resources) {
-        int GROUPS_NUM = 3;
+    private List<ResourceAvailabilityGroup> groupifyResources(List<ResourceAvailability> resources, int groupsNum) {
+        int GROUPS_NUM = groupsNum;
         int groupNum = 1;
         ArrayList<ResourceAvailabilityGroup> groups = new ArrayList<>();
 
@@ -241,9 +241,8 @@ public class SimplerGroupExperiment implements Experiment {
         return new ResourceAvailability(orderNum, resource, availability);
     }
 
-    private List<Job> generateJobFlow() {
+    private List<Job> generateJobFlow(int parallelNum) {
 
-        Integer parallelNum = 5;
         Integer volume = 0; // shouldn't be used in this experiment
 
         Integer budget = 10000;

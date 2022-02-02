@@ -23,7 +23,7 @@ public class GroupTreeAllocator {
             Integer endTime) {
 
 
-        PriorityQueue<Node> tree = new PriorityQueue<>(Comparator.comparing(n -> n.upperEstinate));
+        PriorityQueue<Node> tree = new PriorityQueue<>(Comparator.comparing(n -> -n.upperEstinate));
         Node resultingNode = null;
         Node startingNode = new Node();
 
@@ -36,8 +36,9 @@ public class GroupTreeAllocator {
         int i = 0;
         // main cycle over the solution tree
         while(!tree.isEmpty()){
-            System.out.println("Node " + ++i + " from tree of size " + tree.size());
             Node nextNode = tree.poll();
+            System.out.println("Next node with upper estimate" + nextNode.upperEstinate);
+
             if(nextNode.splitGroup == null) {
                 resultingNode = nextNode;  // solution!!
                 System.out.println("Node " + i + " is solution!");
@@ -47,12 +48,14 @@ public class GroupTreeAllocator {
                 Node node1 = nextNode.copy();
                 node1.includedGroups.add(nextNode.splitGroup);
                 if(performNodeOptimization(node1, job, resourceGroups, startTime, endTime)) {
+                    System.out.println("New node with upper estimate" + node1.upperEstinate);
                     tree.add(node1);
                 }
 
                 Node node2 = nextNode.copy();
                 node2.excludedGroups.add(nextNode.splitGroup);
                 if(performNodeOptimization(node2, job, resourceGroups, startTime, endTime)) {
+                    System.out.println("New node with upper estimate" + node2.upperEstinate);
                     tree.add(node2);
                 }
             }
@@ -108,7 +111,6 @@ public class GroupTreeAllocator {
                 .map(r -> r.getAvailabilityP())
                 .reduce((p1,p2) -> p1*p2).get();
     }
-
 
     public static ResourceAvailability findPromisingResource(List<ResourceAvailability> solution,
                                                       List<ResourceAvailabilityGroup> partialGroups) {
@@ -210,8 +212,11 @@ public class GroupTreeAllocator {
         return preparedJob;
     }
 
-    public static String explainProblem(List<ResourceAvailabilityGroup> resourceGroups, List<ResourceAvailability> solution, Integer startTime, Integer endTime) {
+    public static String explainProblem(Job job, List<ResourceAvailabilityGroup> resourceGroups, List<ResourceAvailability> solution, Integer startTime, Integer endTime) {
         StringBuilder explanation = new StringBuilder("Input:");
+        if(job != null) {
+            explanation.append("\nJob Cost Limit: ").append(job.getResourceRequest().getBudget());
+        }
 
         for(ResourceAvailabilityGroup g : resourceGroups) {
             explanation.append(String.format("\nGroup %s P: %f of %d resources:", g.getOrderNum(), g.getAvailabilityP(), g.getResources().size()));
@@ -222,11 +227,16 @@ public class GroupTreeAllocator {
         }
 
         if(solution != null) {
+            Double totalCost = 0d;
+
             explanation.append("\nOutput:");
             for (ResourceAvailability r : solution) {
-                explanation.append("\n").append(String.format("Resource %s cost %f P: %f", r.orderNum, r.getResource().estimateUsageCost(startTime, endTime), r.getAvailabilityP()));
+                Double resourceCost = r.getResource().estimateUsageCost(startTime, endTime);
+                totalCost += resourceCost;
+                explanation.append("\n").append(String.format("Resource %s cost %f P: %f", r.orderNum, resourceCost, r.getAvailabilityP()));
             }
             explanation.append("\nTotal P:").append(calculateTotalProbability(solution));
+            explanation.append("\nTotal C:").append(totalCost).append("/").append(job.getResourceRequest().getBudget());
         }
 
         return explanation.append("\n").toString();
