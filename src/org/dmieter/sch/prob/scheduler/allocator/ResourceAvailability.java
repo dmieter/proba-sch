@@ -11,16 +11,14 @@ import org.dmieter.sch.prob.resources.Resource;
 
 @Getter
 @Setter
-public class ResourceAvailability {
+public class ResourceAvailability extends AvailabilityEntity {
 
-    public Integer orderNum;
     public Resource resource;
-    public Double availabilityP;
+    public ResourceAvailabilityGroup group;
 
     public ResourceAvailability(Integer orderNum, Resource resource, Double availabilityP) {
-        this.orderNum = orderNum;
+        super(orderNum, availabilityP);
         this.resource = resource;
-        this.availabilityP = availabilityP;
     }
     
     public ResourceAvailability copy(){

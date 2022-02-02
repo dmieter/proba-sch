@@ -1,6 +1,7 @@
 package org.dmieter.sch.prob.user;
 
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  *
@@ -8,6 +9,7 @@ import lombok.Getter;
  */
 
 @Getter
+@Setter
 public class ResourceRequest {
     protected Integer budget;
     protected Integer parallelNum;
