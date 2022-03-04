@@ -26,13 +26,8 @@ public class ExperimentRunner {
           
         exp.run(1);
         System.out.println(exp.printResults());
-        DomainVisualizerFrame frame = new DomainVisualizerFrame(exp.getSchedulingController().getResourceDomain());
-        frame.setVisible(true);
+        //DomainVisualizerFrame frame = new DomainVisualizerFrame(exp.getSchedulingController().getResourceDomain());
+        //frame.setVisible(true);
     }
-    
-    private static void test(){
-        LogNormalDistribution distribution = new LogNormalDistribution(10, 1);
-        
-        System.out.print(distribution.cumulativeProbability(10));
-    }
+
 }

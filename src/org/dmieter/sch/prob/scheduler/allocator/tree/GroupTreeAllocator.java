@@ -4,6 +4,7 @@ import org.dmieter.sch.prob.job.Job;
 import org.dmieter.sch.prob.scheduler.allocator.GreedyMaxPLimitedAllocator;
 import org.dmieter.sch.prob.scheduler.allocator.ResourceAvailability;
 import org.dmieter.sch.prob.scheduler.allocator.ResourceAvailabilityGroup;
+import org.dmieter.sch.prob.scheduler.allocator.ResourceAvailabilityPriced;
 import org.dmieter.sch.prob.scheduler.criteria.AvailableProbabilityCriterion;
 import org.dmieter.sch.prob.scheduler.criteria.SumCostCriterion;
 import org.dmieter.sch.prob.user.ResourceRequest;
@@ -14,15 +15,14 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.stream.Collectors;
 
-public class GroupTreeAllocator {
+public class GroupTreeAllocator extends AbstractGroupAllocator{
 
     public static List<ResourceAvailability> allocateResources(
             Job job,
             List<ResourceAvailabilityGroup> resourceGroups,
             Integer startTime,
             Integer endTime) {
-
-
+        
         PriorityQueue<Node> tree = new PriorityQueue<>(Comparator.comparing(n -> -n.upperEstinate));
         Node resultingNode = null;
         Node startingNode = new Node();
@@ -233,7 +233,7 @@ public class GroupTreeAllocator {
             for (ResourceAvailability r : solution) {
                 Double resourceCost = r.getResource().estimateUsageCost(startTime, endTime);
                 totalCost += resourceCost;
-                explanation.append("\n").append(String.format("Resource %s cost %f P: %f", r.orderNum, resourceCost, r.getAvailabilityP()));
+                explanation.append("\n").append(String.format("Resource %s (%s) cost %f P: %f", r.orderNum, r.group.orderNum, resourceCost, r.getAvailabilityP()));
             }
             explanation.append("\nTotal P:").append(calculateTotalProbability(solution));
             explanation.append("\nTotal C:").append(totalCost).append("/").append(job.getResourceRequest().getBudget());
