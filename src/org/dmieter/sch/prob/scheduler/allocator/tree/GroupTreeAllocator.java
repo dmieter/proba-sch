@@ -17,12 +17,27 @@ import java.util.stream.Collectors;
 
 public class GroupTreeAllocator extends AbstractGroupAllocator{
 
+
     public static List<ResourceAvailability> allocateResources(
             Job job,
             List<ResourceAvailabilityGroup> resourceGroups,
             Integer startTime,
             Integer endTime) {
-        
+
+        return allocatePricedResources(
+                job,
+                estimateResourcesCost(resourceGroups, startTime, endTime),
+                startTime,
+                endTime);
+
+    }
+
+    public static List<ResourceAvailability> allocatePricedResources(
+            Job job,
+            List<ResourceAvailabilityGroup> resourceGroups,
+            Integer startTime,
+            Integer endTime) {
+
         PriorityQueue<Node> tree = new PriorityQueue<>(Comparator.comparing(n -> -n.upperEstinate));
         Node resultingNode = null;
         Node startingNode = new Node();
@@ -78,7 +93,7 @@ public class GroupTreeAllocator extends AbstractGroupAllocator{
         List<ResourceAvailability> preparedResources = prepareResources(node, job, resourceGroups, initialSolution);
 
         // update job constraints (res number, budget) taking into account included groups and initial solution
-        Job preparedJob = prepareJob(node, job, initialSolution, startTime, endTime);
+        Job preparedJob = prepareJob(node, job, initialSolution);
 
         List<ResourceAvailability> solution = null;
         if(preparedResources.size() >= job.getResourceRequest().getParallelNum()) {
@@ -104,12 +119,6 @@ public class GroupTreeAllocator extends AbstractGroupAllocator{
         }
 
         return true;
-    }
-
-    public static Double calculateTotalProbability(List<ResourceAvailability> solution) {
-        return solution.stream()
-                .map(r -> r.getAvailabilityP())
-                .reduce((p1,p2) -> p1*p2).get();
     }
 
     public static ResourceAvailability findPromisingResource(List<ResourceAvailability> solution,
@@ -195,7 +204,7 @@ public class GroupTreeAllocator extends AbstractGroupAllocator{
         return candidateResources;
     }
 
-    public static Job prepareJob(Node node, Job baseJob, List<ResourceAvailability> initialSolution, Integer startTime, Integer finishTime) {
+    public static Job prepareJob(Node node, Job baseJob, List<ResourceAvailability> initialSolution) {
         Job preparedJob = baseJob.copy();
         ResourceRequest request = preparedJob.getResourceRequest();
 
@@ -203,7 +212,8 @@ public class GroupTreeAllocator extends AbstractGroupAllocator{
         if(resourcesLeft > 0 && initialSolution.size() > 0) {
             request.setParallelNum(resourcesLeft);
             Long initialCost = Math.round(initialSolution.stream()
-                    .map(r -> r.getResource().estimateUsageCost(startTime, finishTime))
+                    .map(ra -> (ResourceAvailabilityPriced) ra)
+                    .map(r -> r.cost)
                     .reduce((c1, c2) -> c1 + c2).get());
 
             request.setBudget(request.getBudget() - initialCost.intValue());
@@ -212,34 +222,6 @@ public class GroupTreeAllocator extends AbstractGroupAllocator{
         return preparedJob;
     }
 
-    public static String explainProblem(Job job, List<ResourceAvailabilityGroup> resourceGroups, List<ResourceAvailability> solution, Integer startTime, Integer endTime) {
-        StringBuilder explanation = new StringBuilder("Input:");
-        if(job != null) {
-            explanation.append("\nJob Cost Limit: ").append(job.getResourceRequest().getBudget());
-        }
 
-        for(ResourceAvailabilityGroup g : resourceGroups) {
-            explanation.append(String.format("\nGroup %s P: %f of %d resources:", g.getOrderNum(), g.getAvailabilityP(), g.getResources().size()));
-            for(ResourceAvailability r : g.getResources()) {
-                explanation.append("\n\t")
-                        .append(String.format("Resource %s cost %f", r.orderNum, r.getResource().estimateUsageCost(startTime, endTime)));
-            }
-        }
-
-        if(solution != null) {
-            Double totalCost = 0d;
-
-            explanation.append("\nOutput:");
-            for (ResourceAvailability r : solution) {
-                Double resourceCost = r.getResource().estimateUsageCost(startTime, endTime);
-                totalCost += resourceCost;
-                explanation.append("\n").append(String.format("Resource %s (%s) cost %f P: %f", r.orderNum, r.group.orderNum, resourceCost, r.getAvailabilityP()));
-            }
-            explanation.append("\nTotal P:").append(calculateTotalProbability(solution));
-            explanation.append("\nTotal C:").append(totalCost).append("/").append(job.getResourceRequest().getBudget());
-        }
-
-        return explanation.append("\n").toString();
-    }
 
 }

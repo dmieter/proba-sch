@@ -16,6 +16,8 @@ import org.dmieter.sch.prob.resources.Resource;
 import org.dmieter.sch.prob.resources.ResourceDomain;
 import org.dmieter.sch.prob.resources.ResourcesAllocation;
 import org.dmieter.sch.prob.scheduler.allocator.*;
+import org.dmieter.sch.prob.scheduler.allocator.tree.AbstractGroupAllocator;
+import org.dmieter.sch.prob.scheduler.allocator.tree.BruteForceAllocator;
 import org.dmieter.sch.prob.scheduler.allocator.tree.GroupTreeAllocator;
 import org.dmieter.sch.prob.scheduler.criteria.AvailableProbabilityCriterion;
 import org.dmieter.sch.prob.scheduler.criteria.SumCostCriterion;
@@ -64,7 +66,7 @@ public class SimplerGroupExperiment implements Experiment {
         List<ResourceAvailability> resources = generateUtilization(schedulingController, 0.1d /* LOAD SD */, startTime, finishTime);
         List<ResourceAvailabilityGroup> groups = groupifyResources(resources, 5);
 
-        System.out.println(GroupTreeAllocator.explainProblem(null, groups, null, startTime, finishTime));
+        System.out.println(AbstractGroupAllocator.explainProblem(null, groups, null, startTime, finishTime));
 
 
         Job job = generateJobFlow(5).get(0);
@@ -73,11 +75,13 @@ public class SimplerGroupExperiment implements Experiment {
 
         boolean success = true;
 
-        List<ResourceAvailability> result = GroupTreeAllocator.allocateResources(job, groups, startTime, finishTime);
-        success = success && result != null;
+        List<ResourceAvailability> resultTree = GroupTreeAllocator.allocateResources(job, groups, startTime, finishTime);
+        List<ResourceAvailability> resultBrute = BruteForceAllocator.allocateResources(job, groups, startTime, finishTime);
+        success = success && resultBrute != null && resultTree != null;
 
         if(success){
-            System.out.println(GroupTreeAllocator.explainProblem(job, groups, result, startTime, finishTime));
+            System.out.println(AbstractGroupAllocator.explainProblem(job, groups, resultTree, startTime, finishTime));
+            System.out.println(AbstractGroupAllocator.explainProblem(job, groups, resultBrute, startTime, finishTime));
 
 //            createAllocation(job1, allocation1, startTime, finishTime);
 //            createAllocation(job2, allocation2, startTime, finishTime);
@@ -140,13 +144,13 @@ public class SimplerGroupExperiment implements Experiment {
     @Override
     public String printResults() {
         return new StringBuilder()
-                        .append(simpleStats.getData())
-                        .append(mincostStats.getData())
-                        .append(greedyStats.getData())
-                        .append(knapsackStats.getData())
-                        .append(compareStats.getData())
-                        .append(compareStats.getDetailedData("P"))
-                        .append("Greedy wins: " + GreedyMaxPLimitedAllocator.bestWin + " : " + GreedyMaxPLimitedAllocator.greedyWin + " : " + GreedyMaxPLimitedAllocator.mincostWin)
+//                        .append(simpleStats.getData())
+//                        .append(mincostStats.getData())
+//                        .append(greedyStats.getData())
+//                        .append(knapsackStats.getData())
+//                        .append(compareStats.getData())
+//                        .append(compareStats.getDetailedData("P"))
+//                        .append("Greedy wins: " + GreedyMaxPLimitedAllocator.bestWin + " : " + GreedyMaxPLimitedAllocator.greedyWin + " : " + GreedyMaxPLimitedAllocator.mincostWin)
                         .toString();
     }
 
