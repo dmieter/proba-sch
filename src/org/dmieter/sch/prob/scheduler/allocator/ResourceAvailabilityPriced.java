@@ -24,6 +24,12 @@ public class ResourceAvailabilityPriced extends ResourceAvailability {
         super(ra.orderNum, ra.resource, ra.availabilityP);
         this.cost = cost;
     }
+
+    public ResourceAvailabilityPriced(ResourceAvailability ra, ResourceAvailabilityGroup group, Double cost) {
+        super(ra.orderNum, ra.resource, ra.availabilityP);
+        this.group = group;
+        this.cost = cost;
+    }
     
     public ResourceAvailabilityPriced copy(){
         return new ResourceAvailabilityPriced(orderNum, resource.copy(), availabilityP, cost);

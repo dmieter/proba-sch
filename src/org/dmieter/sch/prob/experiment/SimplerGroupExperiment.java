@@ -41,10 +41,8 @@ public class SimplerGroupExperiment implements Experiment {
     
     private SchedulingController schedulingController;
 
-    private final ResourcesAllocationStats simpleStats = new ResourcesAllocationStats("SIMPLE");
-    private final ResourcesAllocationStats greedyStats = new ResourcesAllocationStats("GREEDY");
-    private final ResourcesAllocationStats mincostStats = new ResourcesAllocationStats("MINCOST");
-    private final ResourcesAllocationStats knapsackStats = new ResourcesAllocationStats("KNAPSACK");
+    private final NamedStats bruteStats = new NamedStats("BRUTE");
+    private final NamedStats treeStats = new NamedStats("TREE");
     private final NamedStats compareStats = new NamedStats("COMPARISON");
 
     @Override
@@ -66,43 +64,65 @@ public class SimplerGroupExperiment implements Experiment {
         List<ResourceAvailability> resources = generateUtilization(schedulingController, 0.1d /* LOAD SD */, startTime, finishTime);
         List<ResourceAvailabilityGroup> groups = groupifyResources(resources, 5);
 
-        System.out.println(AbstractGroupAllocator.explainProblem(null, groups, null, startTime, finishTime));
-
+        //System.out.println(AbstractGroupAllocator.explainProblem(null, groups, null, startTime, finishTime));
 
         Job job = generateJobFlow(5).get(0);
 
-
-
         boolean success = true;
 
-        List<ResourceAvailability> resultTree = GroupTreeAllocator.allocateResources(job, groups, startTime, finishTime);
-        List<ResourceAvailability> resultBrute = BruteForceAllocator.allocateResources(job, groups, startTime, finishTime);
-        success = success && resultBrute != null && resultTree != null;
+        Job jobTree = job.copy();
+        Long timeStartTree = System.nanoTime();
+        List<ResourceAvailability> resultTree = GroupTreeAllocator.allocateResources(jobTree, groups, startTime, finishTime);
+        Long durationTree = System.nanoTime() - timeStartTree;
+        if(resultTree == null) {
+            success = false;
+            treeStats.addValue("Fails", 1d);
+        } else {
+            treeStats.addValue("Fails", 0d);
+        }
+
+        Job jobBrute = job.copy();
+        Long timeStartBrute = System.nanoTime();
+        List<ResourceAvailability> resultBrute = BruteForceAllocator.allocateResources(jobBrute, groups, startTime, finishTime);
+        Long durationBrute = System.nanoTime() - timeStartBrute;
+        if(resultBrute == null) {
+            success = false;
+            bruteStats.addValue("Fails", 1d);
+        } else {
+            bruteStats.addValue("Fails", 0d);
+        }
 
         if(success){
-            System.out.println(AbstractGroupAllocator.explainProblem(job, groups, resultTree, startTime, finishTime));
-            System.out.println(AbstractGroupAllocator.explainProblem(job, groups, resultBrute, startTime, finishTime));
+            //System.out.println(AbstractGroupAllocator.explainProblem(job, groups, resultTree, startTime, finishTime));
+            //System.out.println(AbstractGroupAllocator.explainProblem(job, groups, resultBrute, startTime, finishTime));
 
-//            createAllocation(job1, allocation1, startTime, finishTime);
-//            createAllocation(job2, allocation2, startTime, finishTime);
-//            createAllocation(job3, allocation3, startTime, finishTime);
-//            createAllocation(job4, allocation4, startTime, finishTime);
-//
-//            greedyStats.processAllocation(job1, greedyT);
-//            knapsackStats.processAllocation(job2, knapsackT);
-//            simpleStats.processAllocation(job3, simpleT);
-//            mincostStats.processAllocation(job4, mincostT);
-//
-//            SumCostCriterion costC = new SumCostCriterion();
-//            AvailableProbabilityCriterion probC = new AvailableProbabilityCriterion();
-//
-//            Double greedyC = costC.getValue(job1.getResourcesAllocation());
-//            Double knapsackC = costC.getValue(job2.getResourcesAllocation());
-//            compareStats.addValue("C", (knapsackC-greedyC)/knapsackC);
-//
-//            Double greedyP = probC.getValue(job1.getResourcesAllocation());
-//            Double knapsackP = probC.getValue(job2.getResourcesAllocation());
-//            compareStats.addValue("P", greedyP-knapsackP);
+            AbstractGroupAllocator.SolutionStats resultTreeStats = AbstractGroupAllocator.estimateSolution(jobTree, resultTree, startTime, finishTime);
+            treeStats.addValue("P", resultTreeStats.probability);
+            treeStats.addValue("C", resultTreeStats.totalCost);
+            treeStats.addValue("Feasible", resultTreeStats.isFeasible? 1d : 0d);
+            treeStats.addValue("T", durationTree/1000000d); // nano -> mls
+
+
+            AbstractGroupAllocator.SolutionStats resultBruteStats = AbstractGroupAllocator.estimateSolution(jobBrute, resultBrute, startTime, finishTime);
+            bruteStats.addValue("P", resultBruteStats.probability);
+            bruteStats.addValue("C", resultBruteStats.totalCost);
+            bruteStats.addValue("Feasible", resultBruteStats.isFeasible? 1d : 0d);
+            bruteStats.addValue("T", durationBrute/1000000d); // nano -> mls
+
+            compareStats.addValue("relT", durationTree.doubleValue() / durationBrute.doubleValue());
+
+            if(resultBruteStats.probability != 0) {
+                compareStats.addValue("relP", (resultBruteStats.probability - resultTreeStats.probability) / resultBruteStats.probability);
+            }
+
+            if(resultBruteStats.totalCost != 0) {
+                Double relC = (resultTreeStats.totalCost - resultBruteStats.totalCost) / resultBruteStats.totalCost;
+                compareStats.addValue("relC", relC);
+                if(relC < 0) { // smth wrong
+                    System.out.println(AbstractGroupAllocator.explainProblem(job, groups, resultTree, startTime, finishTime));
+                    System.out.println(AbstractGroupAllocator.explainProblem(job, groups, resultBrute, startTime, finishTime));
+                }
+            }
         }
         
     }
@@ -144,13 +164,12 @@ public class SimplerGroupExperiment implements Experiment {
     @Override
     public String printResults() {
         return new StringBuilder()
-//                        .append(simpleStats.getData())
-//                        .append(mincostStats.getData())
+                        .append(bruteStats.getData())
+                        .append(treeStats.getData())
 //                        .append(greedyStats.getData())
 //                        .append(knapsackStats.getData())
-//                        .append(compareStats.getData())
-//                        .append(compareStats.getDetailedData("P"))
-//                        .append("Greedy wins: " + GreedyMaxPLimitedAllocator.bestWin + " : " + GreedyMaxPLimitedAllocator.greedyWin + " : " + GreedyMaxPLimitedAllocator.mincostWin)
+                        .append(compareStats.getData())
+                        .append(compareStats.getDetailedData("P"))
                         .toString();
     }
 
@@ -197,7 +216,7 @@ public class SimplerGroupExperiment implements Experiment {
         // 2. adding uniform event to the resource
         Event generalEvent = new Event(
                                         new QuazyUniformDistribution(load),
-                                        startTime, 
+                                        startTime,
                                         endTime, 
                                         startTime, 
                                         EventType.GENERAL);
@@ -206,44 +225,7 @@ public class SimplerGroupExperiment implements Experiment {
         return new ResourceAvailability(orderNum, resource, 1-load);
         
     }
-    
-    @Deprecated
-    private ResourceAvailability generateUtilization(int orderNum, Resource resource, Double load, 
-                                                            int startTime, int endTime) {
-        
-        // 1. Calculating if current resource is utilized or not
-        Double availability = 1d;  // base availabiity is 1
-        if(MathUtils.getUniform(0d, 1d) < load){    // if this resource should be utilized
-            availability = 0d;                      // then availability is 0
-        }
-        
-        
-        // 2. calculating deviation from absolute availability
-        Distribution d = new NormalEventDistribution(0d, 0.1d);
-        
-        Double deviation = Math.abs(d.getSampleValue());
-        if(deviation > 1){
-            deviation = 1d;
-        }
-        
-        // 3. applying devition to absolute availability
-        if(availability > 0){
-            availability -= deviation;
-        } else {
-            availability += deviation;
-        }
-        
-        // 4. adding uniform event to the resource
-        Event generalEvent = new Event(
-                                        new QuazyUniformDistribution(1-availability), // this event represent resources allocation = 1 - availability
-                                        startTime, 
-                                        endTime, 
-                                        startTime, 
-                                        EventType.GENERAL);
-        resource.addEvent(generalEvent);
-        
-        return new ResourceAvailability(orderNum, resource, availability);
-    }
+
 
     private List<Job> generateJobFlow(int parallelNum) {
 
@@ -269,12 +251,6 @@ public class SimplerGroupExperiment implements Experiment {
 
     public SchedulingController getSchedulingController() {
         return schedulingController;
-    }
-    
-    private List<ResourceAvailability> copyResources (List<ResourceAvailability> resources){
-        return resources.stream()
-                .map(r -> r.copy())
-                .collect(Collectors.toList());
     }
     
     private void createAllocation(Job job, List<ResourceAvailability> resources, int startTime, int finishTime){

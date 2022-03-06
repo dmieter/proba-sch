@@ -46,7 +46,7 @@ public class BruteForceAllocator extends AbstractGroupAllocator {
 
         // if this is the bottom level
         if(usedResources.size() == job.getResourceRequest().getParallelNum()) {
-            System.out.println(usedResources);
+            //System.out.println(usedResources); // LOG
             ArrayList<ResourceAvailabilityPriced> solution = new ArrayList<>();
             for(Integer i = 0; i < resources.size(); i++) {
                 if(usedResources.contains(i)){
@@ -68,7 +68,13 @@ public class BruteForceAllocator extends AbstractGroupAllocator {
                     previousNumber = i;
 
                     SolutionStats currentStats = checkNextConfiguration(resources, usedResources, job);
-                    if(currentStats.isFeasible && currentStats.probability > resultingSolution.probability){
+                    // selecting feasible solution with max probability and minimum total cost as second criteria
+                    Double epsilon = 0.000001;  // epsilon used to check if probability is the same
+                    Double probabilityDiff = currentStats.probability - resultingSolution.probability;
+                    if(currentStats.isFeasible &&
+                            (probabilityDiff > epsilon // new solution is way better by P
+                            || Math.abs(probabilityDiff) < epsilon && currentStats.totalCost < resultingSolution.totalCost)  // new solution better by cost
+                    ){
                         resultingSolution = currentStats;
                     }
                 }

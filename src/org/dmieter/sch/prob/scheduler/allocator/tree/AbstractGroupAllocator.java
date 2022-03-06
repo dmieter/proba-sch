@@ -59,6 +59,15 @@ public abstract class AbstractGroupAllocator {
                 .reduce((p1,p2) -> p1*p2).get();
     }
 
+    public static SolutionStats estimateSolution(Job job, List<ResourceAvailability> solution, Integer startTime, Integer endTime) {
+
+        return estimateSolution(job,
+                solution.stream()
+                .map(ra -> new ResourceAvailabilityPriced(ra, ra.group, ra.resource.estimateUsageCost(startTime, endTime)))
+                .collect(Collectors.toList())
+        );
+    }
+
     protected static SolutionStats estimateSolution(Job job, List<ResourceAvailabilityPriced> solution) {
 
         SolutionStats result = new SolutionStats(false, 1d, 0d);
@@ -73,7 +82,7 @@ public abstract class AbstractGroupAllocator {
         return result;
     }
 
-    protected static class SolutionStats {
+    public static class SolutionStats {
 
         public Boolean isFeasible;
         public Double probability;
