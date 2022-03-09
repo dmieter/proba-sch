@@ -1,10 +1,7 @@
 package org.dmieter.sch.prob.scheduler.allocator.tree;
 
 import org.dmieter.sch.prob.job.Job;
-import org.dmieter.sch.prob.scheduler.allocator.GreedyMaxPLimitedAllocator;
-import org.dmieter.sch.prob.scheduler.allocator.ResourceAvailability;
-import org.dmieter.sch.prob.scheduler.allocator.ResourceAvailabilityGroup;
-import org.dmieter.sch.prob.scheduler.allocator.ResourceAvailabilityPriced;
+import org.dmieter.sch.prob.scheduler.allocator.*;
 import org.dmieter.sch.prob.scheduler.criteria.AvailableProbabilityCriterion;
 import org.dmieter.sch.prob.scheduler.criteria.SumCostCriterion;
 import org.dmieter.sch.prob.user.ResourceRequest;
@@ -17,6 +14,8 @@ import java.util.stream.Collectors;
 
 public class GroupTreeAllocator extends AbstractGroupAllocator{
 
+    public enum IntermediateAllocation {KNAPSACK, GREEDY};
+    public static IntermediateAllocation intermediateAllocation = IntermediateAllocation.GREEDY;
 
     public static List<ResourceAvailability> allocateResources(
             Job job,
@@ -98,7 +97,12 @@ public class GroupTreeAllocator extends AbstractGroupAllocator{
         List<ResourceAvailability> solution = null;
         if(preparedResources.size() >= job.getResourceRequest().getParallelNum()) {
             // solution for new prepared problem
-            solution = GreedyMaxPLimitedAllocator.allocateResources(preparedJob, preparedResources, startTime, endTime);
+            switch(intermediateAllocation){
+                case GREEDY: solution = GreedyMaxPLimitedAllocator.allocateResources(preparedJob, preparedResources, startTime, endTime); break;
+                case KNAPSACK: solution = KnapsackMaxPAllocator.allocateResources(preparedJob, preparedResources, startTime, endTime); break;
+                default: throw new IllegalStateException("Unknown intermediateAllocation specified: " + intermediateAllocation);
+            }
+
             solution.addAll(initialSolution);
         }
 

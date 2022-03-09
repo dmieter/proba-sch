@@ -8,7 +8,6 @@ import org.dmieter.sch.prob.distribution.QuazyUniformDistribution;
 import org.dmieter.sch.prob.events.Event;
 import org.dmieter.sch.prob.events.EventType;
 import org.dmieter.sch.prob.experiment.stat.NamedStats;
-import org.dmieter.sch.prob.experiment.stat.ResourcesAllocationStats;
 import org.dmieter.sch.prob.generator.ResourceGenerator;
 import org.dmieter.sch.prob.job.Job;
 import org.dmieter.sch.prob.job.RegularJob;
@@ -20,17 +19,12 @@ import org.dmieter.sch.prob.scheduler.allocator.tree.AbstractGroupAllocator;
 import org.dmieter.sch.prob.scheduler.allocator.tree.BruteForceAllocator;
 import org.dmieter.sch.prob.scheduler.allocator.tree.GroupTreeAllocator;
 import org.dmieter.sch.prob.scheduler.criteria.AvailableProbabilityCriterion;
-import org.dmieter.sch.prob.scheduler.criteria.SumCostCriterion;
 import org.dmieter.sch.prob.scheduler.criteria.UserPreferenceModel;
 import org.dmieter.sch.prob.user.ResourceRequest;
 import project.math.distributions.GaussianFacade;
 import project.math.distributions.GaussianSettings;
-import project.math.utils.MathUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -42,7 +36,8 @@ public class SimplerGroupExperiment implements Experiment {
     private SchedulingController schedulingController;
 
     private final NamedStats bruteStats = new NamedStats("BRUTE");
-    private final NamedStats treeStats = new NamedStats("TREE");
+    private final NamedStats treeStatsGreedy = new NamedStats("TREE Greedy");
+    private final NamedStats treeStatsKnapsack = new NamedStats("TREE Knapsack");
     private final NamedStats compareStats = new NamedStats("COMPARISON");
 
     @Override
@@ -55,30 +50,43 @@ public class SimplerGroupExperiment implements Experiment {
     }
 
     public void runSingleExperiment() {
-        ResourceDomain domain = generateResources(20);
+        ResourceDomain domain = generateResources(15);
         int startTime = 0;
         int finishTime = 1;
         
         
         schedulingController = new SchedulingController(domain);
         List<ResourceAvailability> resources = generateUtilization(schedulingController, 0.1d /* LOAD SD */, startTime, finishTime);
-        List<ResourceAvailabilityGroup> groups = groupifyResources(resources, 5);
+        List<ResourceAvailabilityGroup> groups = groupifyResourcesRandom(resources, 5);
 
         //System.out.println(AbstractGroupAllocator.explainProblem(null, groups, null, startTime, finishTime));
 
-        Job job = generateJobFlow(5).get(0);
+        Job job = generateJobFlow(6).get(0);
 
         boolean success = true;
 
-        Job jobTree = job.copy();
+        Job jobTreeGreedy = job.copy();
+        GroupTreeAllocator.intermediateAllocation = GroupTreeAllocator.IntermediateAllocation.GREEDY;
         Long timeStartTree = System.nanoTime();
-        List<ResourceAvailability> resultTree = GroupTreeAllocator.allocateResources(jobTree, groups, startTime, finishTime);
-        Long durationTree = System.nanoTime() - timeStartTree;
-        if(resultTree == null) {
+        List<ResourceAvailability> resultTreeGreedy = GroupTreeAllocator.allocateResources(jobTreeGreedy, groups, startTime, finishTime);
+        Long durationTreeGreedy = System.nanoTime() - timeStartTree;
+        if(resultTreeGreedy == null) {
             success = false;
-            treeStats.addValue("Fails", 1d);
+            treeStatsGreedy.addValue("Fails", 1d);
         } else {
-            treeStats.addValue("Fails", 0d);
+            treeStatsGreedy.addValue("Fails", 0d);
+        }
+
+        Job jobTreeKnapsack = job.copy();
+        GroupTreeAllocator.intermediateAllocation = GroupTreeAllocator.IntermediateAllocation.KNAPSACK;
+        timeStartTree = System.nanoTime();
+        List<ResourceAvailability> resultTreeKnapsack = GroupTreeAllocator.allocateResources(jobTreeKnapsack, groups, startTime, finishTime);
+        Long durationTreeKnapsack = System.nanoTime() - timeStartTree;
+        if(resultTreeKnapsack == null) {
+            success = false;
+            treeStatsKnapsack.addValue("Fails", 1d);
+        } else {
+            treeStatsKnapsack.addValue("Fails", 0d);
         }
 
         Job jobBrute = job.copy();
@@ -96,12 +104,17 @@ public class SimplerGroupExperiment implements Experiment {
             //System.out.println(AbstractGroupAllocator.explainProblem(job, groups, resultTree, startTime, finishTime));
             //System.out.println(AbstractGroupAllocator.explainProblem(job, groups, resultBrute, startTime, finishTime));
 
-            AbstractGroupAllocator.SolutionStats resultTreeStats = AbstractGroupAllocator.estimateSolution(jobTree, resultTree, startTime, finishTime);
-            treeStats.addValue("P", resultTreeStats.probability);
-            treeStats.addValue("C", resultTreeStats.totalCost);
-            treeStats.addValue("Feasible", resultTreeStats.isFeasible? 1d : 0d);
-            treeStats.addValue("T", durationTree/1000000d); // nano -> mls
+            AbstractGroupAllocator.SolutionStats resultTreeGreedyStats = AbstractGroupAllocator.estimateSolution(jobTreeGreedy, resultTreeGreedy, startTime, finishTime);
+            treeStatsGreedy.addValue("P", resultTreeGreedyStats.probability);
+            treeStatsGreedy.addValue("C", resultTreeGreedyStats.totalCost);
+            treeStatsGreedy.addValue("Feasible", resultTreeGreedyStats.isFeasible? 1d : 0d);
+            treeStatsGreedy.addValue("T", durationTreeGreedy/1000000d); // nano -> mls
 
+            AbstractGroupAllocator.SolutionStats resultTreeKnapsackStats = AbstractGroupAllocator.estimateSolution(jobTreeKnapsack, resultTreeKnapsack, startTime, finishTime);
+            treeStatsKnapsack.addValue("P", resultTreeKnapsackStats.probability);
+            treeStatsKnapsack.addValue("C", resultTreeKnapsackStats.totalCost);
+            treeStatsKnapsack.addValue("Feasible", resultTreeKnapsackStats.isFeasible? 1d : 0d);
+            treeStatsKnapsack.addValue("T", durationTreeKnapsack/1000000d); // nano -> mls
 
             AbstractGroupAllocator.SolutionStats resultBruteStats = AbstractGroupAllocator.estimateSolution(jobBrute, resultBrute, startTime, finishTime);
             bruteStats.addValue("P", resultBruteStats.probability);
@@ -109,17 +122,28 @@ public class SimplerGroupExperiment implements Experiment {
             bruteStats.addValue("Feasible", resultBruteStats.isFeasible? 1d : 0d);
             bruteStats.addValue("T", durationBrute/1000000d); // nano -> mls
 
-            compareStats.addValue("relT", durationTree.doubleValue() / durationBrute.doubleValue());
+            compareStats.addValue("relT Greedy", durationTreeGreedy.doubleValue() / durationBrute.doubleValue());
+            compareStats.addValue("relT Knapsack", durationTreeKnapsack.doubleValue() / durationBrute.doubleValue());
 
             if(resultBruteStats.probability != 0) {
-                compareStats.addValue("relP", (resultBruteStats.probability - resultTreeStats.probability) / resultBruteStats.probability);
+                compareStats.addValue("relP Greedy", (resultBruteStats.probability - resultTreeGreedyStats.probability) / resultBruteStats.probability);
+                compareStats.addValue("relP Knapsack", (resultBruteStats.probability - resultTreeKnapsackStats.probability) / resultBruteStats.probability);
             }
 
             if(resultBruteStats.totalCost != 0) {
-                Double relC = (resultTreeStats.totalCost - resultBruteStats.totalCost) / resultBruteStats.totalCost;
-                compareStats.addValue("relC", relC);
+                Double relC = (resultTreeGreedyStats.totalCost - resultBruteStats.totalCost) / resultBruteStats.totalCost;
+                compareStats.addValue("relC Greedy", relC);
                 if(relC < 0) { // smth wrong
-                    System.out.println(AbstractGroupAllocator.explainProblem(job, groups, resultTree, startTime, finishTime));
+                    System.out.println("Greedy is cheaper then Brute by " + relC);
+                    System.out.println(AbstractGroupAllocator.explainProblem(job, groups, resultTreeGreedy, startTime, finishTime));
+                    System.out.println(AbstractGroupAllocator.explainProblem(job, groups, resultBrute, startTime, finishTime));
+                }
+
+                relC = (resultTreeKnapsackStats.totalCost - resultBruteStats.totalCost) / resultBruteStats.totalCost;
+                compareStats.addValue("relC Knapsack", relC);
+                if(relC < 0) { // smth wrong
+                    System.out.println("Knapsack is cheaper then Brute by " + relC);
+                    System.out.println(AbstractGroupAllocator.explainProblem(job, groups, resultTreeKnapsack, startTime, finishTime));
                     System.out.println(AbstractGroupAllocator.explainProblem(job, groups, resultBrute, startTime, finishTime));
                 }
             }
@@ -127,7 +151,7 @@ public class SimplerGroupExperiment implements Experiment {
         
     }
 
-    private List<ResourceAvailabilityGroup> groupifyResources(List<ResourceAvailability> resources, int groupsNum) {
+    private List<ResourceAvailabilityGroup> groupifyResourcesUniform(List<ResourceAvailability> resources, int groupsNum) {
         int GROUPS_NUM = groupsNum;
         int groupNum = 1;
         ArrayList<ResourceAvailabilityGroup> groups = new ArrayList<>();
@@ -161,15 +185,34 @@ public class SimplerGroupExperiment implements Experiment {
         return groups;
     }
 
+    private List<ResourceAvailabilityGroup> groupifyResourcesRandom(List<ResourceAvailability> resources, int groupsNum) {
+        List<ResourceAvailabilityGroup> groups = new ArrayList<>();
+        for(int i = 0; i < groupsNum; i++){
+            groups.add(new ResourceAvailabilityGroup(i, 1d));
+        }
+
+        Random random = new Random();
+        for(ResourceAvailability resource : resources) {
+            int groupNum = random.nextInt(groupsNum);
+            ResourceAvailabilityGroup group = groups.get(groupNum);
+
+            group.getResources().add(resource);
+            group.setAvailabilityP(resource.getAvailabilityP());
+            resource.setGroup(group);
+        }
+
+        return groups;
+    }
+
     @Override
     public String printResults() {
         return new StringBuilder()
                         .append(bruteStats.getData())
-                        .append(treeStats.getData())
-//                        .append(greedyStats.getData())
+                        .append(treeStatsGreedy.getData())
+                        .append(treeStatsKnapsack.getData())
 //                        .append(knapsackStats.getData())
                         .append(compareStats.getData())
-                        .append(compareStats.getDetailedData("P"))
+                        .append(compareStats.getDetailedData("relP Knapsack"))
                         .toString();
     }
 
