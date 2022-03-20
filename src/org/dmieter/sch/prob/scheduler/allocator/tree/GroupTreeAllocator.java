@@ -95,7 +95,7 @@ public class GroupTreeAllocator extends AbstractGroupAllocator{
         Job preparedJob = prepareJob(node, job, initialSolution);
 
         List<ResourceAvailability> solution = null;
-        if(preparedResources.size() >= job.getResourceRequest().getParallelNum()) {
+        if(preparedResources.size() >= preparedJob.getResourceRequest().getParallelNum()) {
             // solution for new prepared problem
             switch(intermediateAllocation){
                 case GREEDY: solution = GreedyMaxPLimitedAllocator.allocateResources(preparedJob, preparedResources, startTime, endTime); break;
@@ -112,7 +112,7 @@ public class GroupTreeAllocator extends AbstractGroupAllocator{
 
         // populating node result
         node.solution = solution;
-        node.upperEstinate = calculateTotalProbability(solution);
+        node.upperEstinate = calculateTotalEstimatedProbability(solution);  // we should calculate estimated probability based on currently estimated respurces' Ps, not by their groups
 
         List<ResourceAvailabilityGroup> partialGroups = findPartialGroups(solution, resourceGroups, node);
         if(!partialGroups.isEmpty()) {
@@ -135,6 +135,12 @@ public class GroupTreeAllocator extends AbstractGroupAllocator{
 
     public static Double calcResourceUtility(ResourceAvailability resource){
         return resource.getAvailabilityP()/resource.getResource().getDescription().price;
+    }
+
+    public static Double calculateTotalEstimatedProbability(List<ResourceAvailability> solution) {
+        return solution.stream()
+                .map(r -> r.getAvailabilityP())
+                .reduce((p1,p2) -> p1*p2).get();
     }
 
     public static List<ResourceAvailabilityGroup> findPartialGroups(List<ResourceAvailability> solution,
