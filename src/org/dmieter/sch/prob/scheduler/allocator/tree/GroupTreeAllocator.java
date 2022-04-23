@@ -14,8 +14,9 @@ import java.util.stream.Collectors;
 
 public class GroupTreeAllocator extends AbstractGroupAllocator{
 
-    public enum IntermediateAllocation {KNAPSACK, GREEDY};
-    public static IntermediateAllocation intermediateAllocation = IntermediateAllocation.GREEDY;
+    public enum AllocationAlgorithm {KNAPSACK, GREEDY};
+    public static AllocationAlgorithm intermediateAllocation = AllocationAlgorithm.GREEDY;
+    public static AllocationAlgorithm finalAllocation = AllocationAlgorithm.KNAPSACK;
 
     public static List<ResourceAvailability> allocateResources(
             Job job,
@@ -41,7 +42,7 @@ public class GroupTreeAllocator extends AbstractGroupAllocator{
         Node resultingNode = null;
         Node startingNode = new Node();
 
-        if(performNodeOptimization(startingNode, job, resourceGroups, startTime, endTime)) {
+        if(performNodeOptimization(startingNode, job, resourceGroups, startTime, endTime, intermediateAllocation)) {
             tree.add(startingNode);
         } else {
             return null; // no solution found from starting node
@@ -61,29 +62,45 @@ public class GroupTreeAllocator extends AbstractGroupAllocator{
                 // split to two nodes
                 Node node1 = nextNode.copy();
                 node1.includedGroups.add(nextNode.splitGroup);
-                if(performNodeOptimization(node1, job, resourceGroups, startTime, endTime)) {
+                if(performNodeOptimization(node1, job, resourceGroups, startTime, endTime, intermediateAllocation)) {
                     System.out.println("New node with upper estimate" + node1.upperEstinate);
                     tree.add(node1);
                 }
 
                 Node node2 = nextNode.copy();
                 node2.excludedGroups.add(nextNode.splitGroup);
-                if(performNodeOptimization(node2, job, resourceGroups, startTime, endTime)) {
+                if(performNodeOptimization(node2, job, resourceGroups, startTime, endTime, intermediateAllocation)) {
                     System.out.println("New node with upper estimate" + node2.upperEstinate);
                     tree.add(node2);
                 }
             }
         }
 
+        // checking if final allocation should be performed
+        if(resultingNode == null) {
+            return null;
+        } else if(intermediateAllocation != finalAllocation) {
+            Node finalizedNode = resultingNode.copy();
+            if (performNodeOptimization(finalizedNode, job, resourceGroups, startTime, endTime, finalAllocation)
+                    && finalizedNode.splitGroup == null) {
+                return finalizedNode.solution;
+            } else {
+                System.out.println("Final allocation with " + finalAllocation + " failed. Returning result allocated with " + intermediateAllocation);
+            }
+        }
 
-        return resultingNode != null ? resultingNode.solution : null;
+        return resultingNode.solution;
+
+        //return resultingNode == null ? null : resultingNode.solution;
     }
+
 
     public static boolean performNodeOptimization(Node node,
                                                               Job job,
                                                               List<ResourceAvailabilityGroup> resourceGroups,
                                                               Integer startTime,
-                                                              Integer endTime) {
+                                                              Integer endTime,
+                                                              AllocationAlgorithm allocationAlgorithm) {
 
         // here we  will store resources from included groups
         List<ResourceAvailability> initialSolution = new ArrayList<>();
@@ -97,16 +114,17 @@ public class GroupTreeAllocator extends AbstractGroupAllocator{
         List<ResourceAvailability> solution = null;
         if(preparedResources.size() >= preparedJob.getResourceRequest().getParallelNum()) {
             // solution for new prepared problem
-            switch(intermediateAllocation){
+            switch(allocationAlgorithm){
                 case GREEDY: solution = GreedyMaxPLimitedAllocator.allocateResources(preparedJob, preparedResources, startTime, endTime); break;
                 case KNAPSACK: solution = KnapsackMaxPAllocator.allocateResources(preparedJob, preparedResources, startTime, endTime); break;
-                default: throw new IllegalStateException("Unknown intermediateAllocation specified: " + intermediateAllocation);
+                default: throw new IllegalStateException("Unknown Allocation algorithm specified: " + allocationAlgorithm);
             }
 
-            solution.addAll(initialSolution);
         }
 
-        if(solution == null) {
+        if(solution != null) {
+            solution.addAll(initialSolution);
+        } else {
             return false;
         }
 
