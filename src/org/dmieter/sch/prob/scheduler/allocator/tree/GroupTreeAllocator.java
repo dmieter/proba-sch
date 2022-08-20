@@ -2,8 +2,6 @@ package org.dmieter.sch.prob.scheduler.allocator.tree;
 
 import org.dmieter.sch.prob.job.Job;
 import org.dmieter.sch.prob.scheduler.allocator.*;
-import org.dmieter.sch.prob.scheduler.criteria.AvailableProbabilityCriterion;
-import org.dmieter.sch.prob.scheduler.criteria.SumCostCriterion;
 import org.dmieter.sch.prob.user.ResourceRequest;
 
 import java.util.ArrayList;
@@ -249,7 +247,6 @@ public class GroupTreeAllocator extends AbstractGroupAllocator{
 
         return preparedJob;
     }
-
 
 
 }

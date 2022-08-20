@@ -24,7 +24,7 @@ public class ExperimentRunner {
 
           //test();
           
-        exp.run(15);
+        exp.run(3);
         System.out.println(exp.printResults());
         //DomainVisualizerFrame frame = new DomainVisualizerFrame(exp.getSchedulingController().getResourceDomain());
         //frame.setVisible(true);

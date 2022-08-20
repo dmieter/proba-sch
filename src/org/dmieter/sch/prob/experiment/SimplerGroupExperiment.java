@@ -42,6 +42,7 @@ public class SimplerGroupExperiment implements Experiment {
     private SchedulingController schedulingController;
 
     private final NamedStats bruteStats = new NamedStats("BRUTE");
+    private final NamedStats singleStats = new NamedStats("Single");
     private final NamedStats treeStatsGreedy = new NamedStats("TREE Greedy");
     private final NamedStats treeStatsKnapsack = new NamedStats("TREE Knapsack");
     private final NamedStats treeStatsGreedyAndKnapsack = new NamedStats("TREE Greedy + Knapsack");
@@ -111,6 +112,18 @@ public class SimplerGroupExperiment implements Experiment {
             treeStatsGreedyAndKnapsack.addValue("Fails", 0d);
         }
 
+        Job jobSingle = job.copy();
+        Long timeStartSingle = System.nanoTime();
+        List<ResourceAvailability> singleResources = groups.stream().flatMap(g -> g.getResources().stream()).collect(Collectors.toList());
+        List<ResourceAvailability> resultSingle = KnapsackMaxPAllocator.allocateResources(jobSingle, singleResources, startTime, finishTime);
+        Long durationSingle = System.nanoTime() - timeStartSingle;
+        if(resultSingle == null) {
+            success = false;
+            singleStats.addValue("Fails", 1d);
+        } else {
+            singleStats.addValue("Fails", 0d);
+        }
+        
         Job jobBrute = job.copy();
         Long timeStartBrute = System.nanoTime();
         List<ResourceAvailability> resultBrute = BruteForceAllocator.allocateResources(jobBrute, groups, startTime, finishTime);
@@ -144,6 +157,12 @@ public class SimplerGroupExperiment implements Experiment {
             treeStatsGreedyAndKnapsack.addValue("Feasible", resultTreeGreedyAndKnapsackStats.isFeasible? 1d : 0d);
             treeStatsGreedyAndKnapsack.addValue("T", durationTreeGreedyAndKnapsack/1000000d); // nano -> mls
 
+            AbstractGroupAllocator.SolutionStats resultSingleStats = AbstractGroupAllocator.estimateSolution(jobSingle, resultSingle, startTime, finishTime);
+            singleStats.addValue("P", resultSingleStats.probability);
+            singleStats.addValue("C", resultSingleStats.totalCost);
+            singleStats.addValue("Feasible", resultSingleStats.isFeasible? 1d : 0d);
+            singleStats.addValue("T", durationSingle/1000000d); // nano -> mls
+            
             AbstractGroupAllocator.SolutionStats resultBruteStats = AbstractGroupAllocator.estimateSolution(jobBrute, resultBrute, startTime, finishTime);
             bruteStats.addValue("P", resultBruteStats.probability);
             bruteStats.addValue("C", resultBruteStats.totalCost);
@@ -152,12 +171,13 @@ public class SimplerGroupExperiment implements Experiment {
 
             compareStats.addValue("relT Greedy", durationTreeGreedy.doubleValue() / durationBrute.doubleValue());
             compareStats.addValue("relT Knapsack", durationTreeKnapsack.doubleValue() / durationBrute.doubleValue());
-            compareStats.addValue("relT Greedy + Knapsack", durationTreeGreedyAndKnapsack.doubleValue() / durationBrute.doubleValue());
+//            compareStats.addValue("relT Greedy + Knapsack", durationTreeGreedyAndKnapsack.doubleValue() / durationBrute.doubleValue());
 
             if(resultBruteStats.probability != 0) {
                 compareStats.addValue("diffP Greedy", resultBruteStats.probability - resultTreeGreedyStats.probability);
                 compareStats.addValue("diffP Knapsack", resultBruteStats.probability - resultTreeKnapsackStats.probability);
                 compareStats.addValue("diffP Greedy + Knapsack", resultBruteStats.probability - resultTreeGreedyAndKnapsackStats.probability);
+                compareStats.addValue("diffP Single", resultBruteStats.probability - resultSingleStats.probability);
 
                 Double diffPKnapsack = resultBruteStats.probability - resultTreeKnapsackStats.probability;
                 if(diffPKnapsack != 0) { // smth wrong, should be the same
@@ -172,10 +192,10 @@ public class SimplerGroupExperiment implements Experiment {
 
             if(resultBruteStats.totalCost != 0) {
                 Double relC = (resultTreeGreedyStats.totalCost - resultBruteStats.totalCost) / resultBruteStats.totalCost;
-                compareStats.addValue("relC Greedy", relC);
+//                compareStats.addValue("relC Greedy", relC);
 
                 relC = (resultTreeKnapsackStats.totalCost - resultBruteStats.totalCost) / resultBruteStats.totalCost;
-                compareStats.addValue("relC Knapsack", relC);
+//                compareStats.addValue("relC Knapsack", relC);
 //                if(relC < 0) { // smth wrong
 //                    System.out.println("Knapsack is cheaper then Brute by " + relC);
 //                    System.out.println(AbstractGroupAllocator.explainProblem(job, groups, resultTreeKnapsack, startTime, finishTime));
@@ -245,7 +265,7 @@ public class SimplerGroupExperiment implements Experiment {
                         .append(bruteStats.getData())
                         .append(treeStatsGreedy.getData())
                         .append(treeStatsKnapsack.getData())
-//                        .append(knapsackStats.getData())
+                        .append(singleStats.getData())
                         .append(compareStats.getData())
                         .append(compareStats.getDetailedData("diffP Knapsack"))
                         .toString();
