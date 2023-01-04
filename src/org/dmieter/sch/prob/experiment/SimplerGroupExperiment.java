@@ -33,10 +33,10 @@ import java.util.stream.Collectors;
  */
 public class SimplerGroupExperiment implements Experiment {
 
-    private static final int RESOURCES_REQUIRED = 6;
-    private static final int JOB_BUDGET = 42;
-    private static final int RESOURCES_NUMBER = 12;
-    private static final int GROUPS_NUMBER = 4;
+    private static final int RESOURCES_REQUIRED = 12;
+    private static final int JOB_BUDGET = 542;
+    private static final int RESOURCES_NUMBER = 20;
+    private static final int GROUPS_NUMBER = 6;
     private static final boolean ROUND_PRICES = true;
 
     private SchedulingController schedulingController;
@@ -262,10 +262,11 @@ public class SimplerGroupExperiment implements Experiment {
     @Override
     public String printResults() {
         return new StringBuilder()
-                        .append(bruteStats.getData())
+                .append(singleStats.getData())
                         .append(treeStatsGreedy.getData())
+                        .append(treeStatsGreedyAndKnapsack.getData())
                         .append(treeStatsKnapsack.getData())
-                        .append(singleStats.getData())
+                        .append(bruteStats.getData())
                         .append(compareStats.getData())
                         .append(compareStats.getDetailedData("diffP Knapsack"))
                         .toString();

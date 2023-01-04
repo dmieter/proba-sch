@@ -55,6 +55,7 @@ public abstract class AbstractGroupAllocator {
                 .collect(Collectors.toSet());
 
         return distinctGroups.stream()
+                .sorted((g1,g2) -> g1.getAvailabilityP().compareTo(g2.getAvailabilityP()))
                 .map(g -> g.getAvailabilityP())
                 .reduce((p1,p2) -> p1*p2).get();
     }

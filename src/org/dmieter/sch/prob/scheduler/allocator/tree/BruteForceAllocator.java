@@ -34,22 +34,29 @@ public class BruteForceAllocator extends AbstractGroupAllocator {
 
     protected static SolutionStats iterateLimited(Job job, ArrayList<ResourceAvailabilityPriced> resources) {
         Set<Integer> usedResources = new HashSet<>();
+        Set<Integer> excludeResources = new HashSet<>();
 
-        return checkNextConfiguration(resources, usedResources, job);
+        return checkNextConfiguration(resources, usedResources, excludeResources, job);
 
     }
 
     protected static SolutionStats checkNextConfiguration(ArrayList<ResourceAvailabilityPriced> resources,
-                                                    Set<Integer> usedResources, Job job) {
+                                                    Set<Integer> usedResources, Set<Integer> excludeResources, Job job) {
 
+        //System.out.println(usedResources);
+
+        // if there's no way to get required number of resources, return empty
+        if(resources.size() - excludeResources.size() + usedResources.size() < job.getResourceRequest().getParallelNum()) {
+            return new SolutionStats(false, -1d, 0d);
+        }
 
 
         // if this is the bottom level
         if(usedResources.size() == job.getResourceRequest().getParallelNum()) {
             //System.out.println(usedResources); // LOG
             ArrayList<ResourceAvailabilityPriced> solution = new ArrayList<>();
-            for(Integer i = 0; i < resources.size(); i++) {
-                if(usedResources.contains(i)){
+            for (Integer i = 0; i < resources.size(); i++) {
+                if (usedResources.contains(i)) {
                     solution.add(resources.get(i));
                 }
             }
@@ -57,17 +64,20 @@ public class BruteForceAllocator extends AbstractGroupAllocator {
             currentStats.solution = solution;
             return currentStats;
 
+
         // else we should iterate over lower levels
         } else {
             SolutionStats resultingSolution = new SolutionStats(false, -1d, 0d);
             Integer previousNumber = -1;
+            Set<Integer> nextExcludeResources = new HashSet<>(excludeResources);
             for(int i = 0; i < resources.size(); i++) {
-                if(!usedResources.contains(i)) {
+                if(!usedResources.contains(i) && !excludeResources.contains(i)) {
+                    nextExcludeResources.add(i);
                     usedResources.remove(previousNumber);
                     usedResources.add(i);
                     previousNumber = i;
 
-                    SolutionStats currentStats = checkNextConfiguration(resources, usedResources, job);
+                    SolutionStats currentStats = checkNextConfiguration(resources, usedResources, nextExcludeResources, job);
                     // selecting feasible solution with max probability and minimum total cost as second criteria
                     Double epsilon = 0.000001;  // epsilon used to check if probability is the same
                     Double probabilityDiff = currentStats.probability - resultingSolution.probability;
