@@ -35,8 +35,8 @@ public class SimplerGroupExperiment implements Experiment {
 
     private static final int RESOURCES_REQUIRED = 12;
     private static final int JOB_BUDGET = 542;
-    private static final int RESOURCES_NUMBER = 20;
-    private static final int GROUPS_NUMBER = 6;
+    private static final int RESOURCES_NUMBER = 21;
+    private static final int GROUPS_NUMBER = 9;
     private static final boolean ROUND_PRICES = true;
 
     private SchedulingController schedulingController;
@@ -73,12 +73,34 @@ public class SimplerGroupExperiment implements Experiment {
 
         boolean success = true;
 
+
+        // first empty run, because usually first run is slower and affects greedy working time
+        Job jobTest = job.copy();
+        GroupTreeAllocator.intermediateAllocation = GroupTreeAllocator.AllocationAlgorithm.GREEDY;
+        GroupTreeAllocator.finalAllocation = GroupTreeAllocator.AllocationAlgorithm.KNAPSACK;
+        GroupTreeAllocator.allocateResources(jobTest, groups, startTime, finishTime);
+
+        //bruteforce
+        Job jobBrute = job.copy();
+        Long timeStartBrute = System.nanoTime();
+        List<ResourceAvailability> resultBrute = BruteForceAllocator.allocateResources(jobBrute, groups, startTime, finishTime);
+        Long durationBrute = System.nanoTime() - timeStartBrute;
+        if(resultBrute == null) {
+            success = false;
+            bruteStats.addValue("Fails", 1d);
+        } else {
+            bruteStats.addValue("Fails", 0d);
+        }
+
+        // greedy
         Job jobTreeGreedy = job.copy();
         GroupTreeAllocator.intermediateAllocation = GroupTreeAllocator.AllocationAlgorithm.GREEDY;
         GroupTreeAllocator.finalAllocation = GroupTreeAllocator.AllocationAlgorithm.GREEDY;
+        GroupTreeAllocator.allocateResources(jobTreeGreedy, groups, startTime, finishTime);
         Long timeStartTree = System.nanoTime();
         List<ResourceAvailability> resultTreeGreedy = GroupTreeAllocator.allocateResources(jobTreeGreedy, groups, startTime, finishTime);
         Long durationTreeGreedy = System.nanoTime() - timeStartTree;
+        System.out.println("Greedy time: " + durationTreeGreedy/1000000d);
         if(resultTreeGreedy == null) {
             success = false;
             treeStatsGreedy.addValue("Fails", 1d);
@@ -86,6 +108,7 @@ public class SimplerGroupExperiment implements Experiment {
             treeStatsGreedy.addValue("Fails", 0d);
         }
 
+        // greedy + knapsack
         Job jobTreeKnapsack = job.copy();
         GroupTreeAllocator.intermediateAllocation = GroupTreeAllocator.AllocationAlgorithm.KNAPSACK;
         GroupTreeAllocator.finalAllocation = GroupTreeAllocator.AllocationAlgorithm.KNAPSACK;
@@ -99,12 +122,14 @@ public class SimplerGroupExperiment implements Experiment {
             treeStatsKnapsack.addValue("Fails", 0d);
         }
 
+        // knapsack
         Job jobTreeGreedyAndKnapsack = job.copy();
         GroupTreeAllocator.intermediateAllocation = GroupTreeAllocator.AllocationAlgorithm.GREEDY;
         GroupTreeAllocator.finalAllocation = GroupTreeAllocator.AllocationAlgorithm.KNAPSACK;
         timeStartTree = System.nanoTime();
         List<ResourceAvailability> resultTreeGreedyAndKnapsack = GroupTreeAllocator.allocateResources(jobTreeGreedyAndKnapsack, groups, startTime, finishTime);
         Long durationTreeGreedyAndKnapsack = System.nanoTime() - timeStartTree;
+        System.out.println("durationTreeGreedyAndKnapsack time: " + durationTreeGreedyAndKnapsack/1000000d);
         if(resultTreeGreedyAndKnapsack == null) {
             success = false;
             treeStatsGreedyAndKnapsack.addValue("Fails", 1d);
@@ -112,6 +137,7 @@ public class SimplerGroupExperiment implements Experiment {
             treeStatsGreedyAndKnapsack.addValue("Fails", 0d);
         }
 
+        // single old knapsack
         Job jobSingle = job.copy();
         Long timeStartSingle = System.nanoTime();
         List<ResourceAvailability> singleResources = groups.stream().flatMap(g -> g.getResources().stream()).collect(Collectors.toList());
@@ -124,16 +150,6 @@ public class SimplerGroupExperiment implements Experiment {
             singleStats.addValue("Fails", 0d);
         }
         
-        Job jobBrute = job.copy();
-        Long timeStartBrute = System.nanoTime();
-        List<ResourceAvailability> resultBrute = BruteForceAllocator.allocateResources(jobBrute, groups, startTime, finishTime);
-        Long durationBrute = System.nanoTime() - timeStartBrute;
-        if(resultBrute == null) {
-            success = false;
-            bruteStats.addValue("Fails", 1d);
-        } else {
-            bruteStats.addValue("Fails", 0d);
-        }
 
         if(success){
             //System.out.println(AbstractGroupAllocator.explainProblem(job, groups, resultTree, startTime, finishTime));
