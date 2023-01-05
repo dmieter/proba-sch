@@ -39,6 +39,14 @@ public class SimplerGroupExperiment implements Experiment {
     private static final int GROUPS_NUMBER = 9;
     private static final boolean ROUND_PRICES = true;
 
+//    План эксперимента
+//
+//1. 21 ресурс, изменение количества необходимых ресурсов от 1 до 21, сравнение P, T, C
+//2. Без брутфорса, Найти количество ресурсов, где у деревянного рюкзака вреям работы около 1 секунды, простановка бюджета,  сравнение P, T, C
+//2.1 Изменение количества необходимых ресурсов от 1 до N
+//2.2 Изменение количества групп от 1 до N
+//2.3 Изменение бюджета от минимум до максимума, сравнение P, T, C, fails
+
     private SchedulingController schedulingController;
 
     private final NamedStats bruteStats = new NamedStats("BRUTE");
