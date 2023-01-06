@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  */
 public class SimplerGroupExperiment implements Experiment {
 
-    private static final int RESOURCES_REQUIRED = 12;
+    private static final int RESOURCES_REQUIRED = 3;
     private static final int JOB_BUDGET = 542;
     private static final int RESOURCES_NUMBER = 21;
     private static final int GROUPS_NUMBER = 9;
@@ -42,6 +42,8 @@ public class SimplerGroupExperiment implements Experiment {
 //    План эксперимента
 //
 //1. 21 ресурс, изменение количества необходимых ресурсов от 1 до 21, сравнение P, T, C
+// 1.1 без Ограничения на бюджет
+// 1.2 Изменение бюджета от минимума до максимума, сравнение P, T, C, fails
 //2. Без брутфорса, Найти количество ресурсов, где у деревянного рюкзака вреям работы около 1 секунды, простановка бюджета,  сравнение P, T, C
 //2.1 Изменение количества необходимых ресурсов от 1 до N
 //2.2 Изменение количества групп от 1 до N
@@ -116,7 +118,7 @@ public class SimplerGroupExperiment implements Experiment {
             treeStatsGreedy.addValue("Fails", 0d);
         }
 
-        // greedy + knapsack
+        // knapsack
         Job jobTreeKnapsack = job.copy();
         GroupTreeAllocator.intermediateAllocation = GroupTreeAllocator.AllocationAlgorithm.KNAPSACK;
         GroupTreeAllocator.finalAllocation = GroupTreeAllocator.AllocationAlgorithm.KNAPSACK;
@@ -130,7 +132,7 @@ public class SimplerGroupExperiment implements Experiment {
             treeStatsKnapsack.addValue("Fails", 0d);
         }
 
-        // knapsack
+        // greedy + knapsack
         Job jobTreeGreedyAndKnapsack = job.copy();
         GroupTreeAllocator.intermediateAllocation = GroupTreeAllocator.AllocationAlgorithm.GREEDY;
         GroupTreeAllocator.finalAllocation = GroupTreeAllocator.AllocationAlgorithm.KNAPSACK;
@@ -208,6 +210,10 @@ public class SimplerGroupExperiment implements Experiment {
                     System.out.println("Brute better than Knapsack by " + diffPKnapsack);
                     System.out.println(AbstractGroupAllocator.explainProblem(job, groups, resultTreeKnapsack, startTime, finishTime));
                     System.out.println(AbstractGroupAllocator.explainProblem(job, groups, resultBrute, startTime, finishTime));
+                    Job jobTreeKnapsack2 = job.copy();
+                    GroupTreeAllocator.intermediateAllocation = GroupTreeAllocator.AllocationAlgorithm.KNAPSACK;
+                    GroupTreeAllocator.finalAllocation = GroupTreeAllocator.AllocationAlgorithm.KNAPSACK;
+                    List<ResourceAvailability> resultTreeKnapsack2 = GroupTreeAllocator.allocateResources(jobTreeKnapsack2, groups, startTime, finishTime);
 //                    Job jobTreeKnapsack2 = job.copy();
 //                    GroupTreeAllocator.intermediateAllocation = GroupTreeAllocator.IntermediateAllocation.KNAPSACK;
 //                    List<ResourceAvailability> resultTreeKnapsack2 = GroupTreeAllocator.allocateResources(jobTreeKnapsack, groups, startTime, finishTime);

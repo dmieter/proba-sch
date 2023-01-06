@@ -24,4 +24,9 @@ public class ResourceAvailability extends AvailabilityEntity {
     public ResourceAvailability copy(){
         return new ResourceAvailability(orderNum, resource.copy(), availabilityP);
     }
+
+    @Override
+    public String toString() {
+        return "ResourceAvailability R: " + orderNum + " Group: " + group.orderNum + " P: " + group.getAvailabilityP();
+    }
 }

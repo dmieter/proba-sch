@@ -166,6 +166,7 @@ public class GroupTreeAllocator extends AbstractGroupAllocator{
         return resourceGroups.stream()
                 .filter(g -> !node.excludedGroups.contains(g) && !node.includedGroups.contains(g))
                 .filter(g -> !isGroupFullyUsed(solution, g))
+                .filter(g -> isGroupUsed(solution, g))
                 .collect(Collectors.toList());
     }
 
@@ -176,7 +177,13 @@ public class GroupTreeAllocator extends AbstractGroupAllocator{
                 .filter(r -> r.group == group)
                 .count();
 
-        return  resourcesUsedCnt.equals(solution.size()) || resourcesUsedCnt.equals(group.getResources().size());
+        return  resourcesUsedCnt == solution.size() || resourcesUsedCnt == group.getResources().size();
+    }
+
+    public static boolean isGroupUsed(List<ResourceAvailability> solution,
+                                           ResourceAvailabilityGroup group) {
+        return solution.stream()
+                .anyMatch(r -> r.group == group);
     }
 
     public static List<ResourceAvailability> prepareResources(Node node,
