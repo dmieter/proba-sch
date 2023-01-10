@@ -52,6 +52,24 @@ public class NamedStats {
         return data;
     }
 
+    public String getLinearizedData() {
+        String data = "\n";
+        if (groupName != null) {
+            data += groupName.toUpperCase();
+        }
+
+        String firstLine = "";
+        String secondLine = "";
+        for (Map.Entry<String, DescriptiveStatistics> entry : stats.entrySet()) {
+            DescriptiveStatistics varStats = entry.getValue();
+
+            firstLine +=  entry.getKey() + ", ";
+            secondLine += varStats.getMean() +", ";
+        }
+
+        return data +": " + firstLine + "\n" + secondLine;
+    }
+
     public String getData(String alias) {
         String data = "\n";
         if (groupName != null) {
