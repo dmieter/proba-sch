@@ -50,25 +50,25 @@ public class GroupTreeAllocator extends AbstractGroupAllocator{
         // main cycle over the solution tree
         while(!tree.isEmpty()){
             Node nextNode = tree.poll();
-            System.out.println("Next node with upper estimate" + nextNode.upperEstinate);
+            //System.out.println("Next node with upper estimate" + nextNode.upperEstinate);
 
             if(nextNode.splitGroup == null) {
                 resultingNode = nextNode;  // solution!!
-                System.out.println("Node " + i + " is solution!");
+                //System.out.println("Node " + i + " is solution!");
                 break;
             } else {
                 // split to two nodes
                 Node node1 = nextNode.copy();
                 node1.includedGroups.add(nextNode.splitGroup);
                 if(performNodeOptimization(node1, job, resourceGroups, startTime, endTime, intermediateAllocation)) {
-                    System.out.println("New node with upper estimate" + node1.upperEstinate);
+                    //System.out.println("New node with upper estimate" + node1.upperEstinate);
                     tree.add(node1);
                 }
 
                 Node node2 = nextNode.copy();
                 node2.excludedGroups.add(nextNode.splitGroup);
                 if(performNodeOptimization(node2, job, resourceGroups, startTime, endTime, intermediateAllocation)) {
-                    System.out.println("New node with upper estimate" + node2.upperEstinate);
+                    //System.out.println("New node with upper estimate" + node2.upperEstinate);
                     tree.add(node2);
                 }
             }
