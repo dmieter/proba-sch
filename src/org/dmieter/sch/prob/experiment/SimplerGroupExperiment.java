@@ -33,12 +33,12 @@ import java.util.stream.Collectors;
  */
 public class SimplerGroupExperiment implements Experiment {
 
-    private static final int RESOURCES_REQUIRED = 25;
-    private static final int JOB_BUDGET = 180;
-    private static final int RESOURCES_NUMBER = 200;
-    private static final int GROUPS_NUMBER = 50;
+    private static final int RESOURCES_REQUIRED = 11;
+    private static final int JOB_BUDGET = 200;
+    private static final int RESOURCES_NUMBER = 21;
+    private static final int GROUPS_NUMBER = 9;
     private static final boolean ROUND_PRICES = true;
-    private static final boolean USE_BRUTE_FORCE = false;  // for brute we used 8 groups from 21 resources
+    private static final boolean USE_BRUTE_FORCE = true;  // for brute we used 8 groups from 21 resources
 
 //    План эксперимента
 //
@@ -155,6 +155,7 @@ public class SimplerGroupExperiment implements Experiment {
         // single old knapsack
         Job jobSingle = job.copy();
         Long timeStartSingle = System.nanoTime();
+
         List<ResourceAvailability> singleResources = groups.stream().flatMap(g -> g.getResources().stream()).collect(Collectors.toList());
         List<ResourceAvailability> resultSingle = KnapsackMaxPAllocator.allocateResources(jobSingle, singleResources, startTime, finishTime);
         Long durationSingle = System.nanoTime() - timeStartSingle;
@@ -284,14 +285,23 @@ public class SimplerGroupExperiment implements Experiment {
         }
 
         Random random = new Random();
+        int groupsFilled = 0;
         for(ResourceAvailability resource : resources) {
             int groupNum = random.nextInt(groupsNum);
+            if(groupsFilled < groupsNum) {      // we want to fill every group with at least one resource
+                groupNum = groupsFilled;
+                groupsFilled++;
+            }
+
             ResourceAvailabilityGroup group = groups.get(groupNum);
 
             group.getResources().add(resource);
             group.setAvailabilityP(resource.getAvailabilityP());
             resource.setGroup(group);
         }
+
+        // set common group availability for all inner resources
+        groups.stream().forEach(g -> g.getResources().stream().forEach(r -> r.setAvailabilityP(g.getAvailabilityP())));
 
         return groups;
     }
