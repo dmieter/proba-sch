@@ -33,10 +33,10 @@ import java.util.stream.Collectors;
  */
 public class SimplerGroupExperiment implements Experiment {
 
-    private static final int RESOURCES_REQUIRED = 11;
-    private static final int JOB_BUDGET = 200;
+    private static final int RESOURCES_REQUIRED = 8;
+    public static int JOB_BUDGET = 120;
     private static final int RESOURCES_NUMBER = 21;
-    private static final int GROUPS_NUMBER = 9;
+    private static final int GROUPS_NUMBER = 8;
     private static final boolean ROUND_PRICES = true;
     private static final boolean USE_BRUTE_FORCE = true;  // for brute we used 8 groups from 21 resources
 
@@ -75,7 +75,7 @@ public class SimplerGroupExperiment implements Experiment {
         
         
         schedulingController = new SchedulingController(domain);
-        List<ResourceAvailability> resources = generateUtilization(schedulingController, 0.1d /* LOAD SD */, startTime, finishTime);
+        List<ResourceAvailability> resources = generateUtilization(schedulingController, 0.25d /* LOAD SD */, startTime, finishTime);
         List<ResourceAvailabilityGroup> groups = groupifyResourcesRandom(resources, GROUPS_NUMBER);
 
         //System.out.println(AbstractGroupAllocator.explainProblem(null, groups, null, startTime, finishTime));
@@ -322,6 +322,20 @@ public class SimplerGroupExperiment implements Experiment {
                         .append(compareStats.getData())
                         .append(compareStats.getDetailedData("diffP Knapsack"))
                         .toString();
+    }
+
+    public String printResultsShort() {
+        String result = new StringBuilder()
+                .append(singleStats.getLinearizedData())
+                .append(treeStatsGreedy.getLinearizedData())
+                .append(treeStatsGreedyAndKnapsack.getLinearizedData())
+                .append(treeStatsKnapsack.getLinearizedData())
+                .append(bruteStats.getLinearizedData())
+                .append(GroupTreeAllocator.treeSize.getData())
+                .toString();
+
+        GroupTreeAllocator.treeSize = new NamedStats("TREE");
+        return result;
     }
 
     private ResourceDomain generateResources(int resNumber) {

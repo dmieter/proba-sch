@@ -1,5 +1,6 @@
 package org.dmieter.sch.prob.scheduler.allocator.tree;
 
+import org.dmieter.sch.prob.experiment.stat.NamedStats;
 import org.dmieter.sch.prob.job.Job;
 import org.dmieter.sch.prob.scheduler.allocator.*;
 import org.dmieter.sch.prob.user.ResourceRequest;
@@ -15,6 +16,8 @@ public class GroupTreeAllocator extends AbstractGroupAllocator{
     public enum AllocationAlgorithm {KNAPSACK, GREEDY};
     public static AllocationAlgorithm intermediateAllocation = AllocationAlgorithm.GREEDY;
     public static AllocationAlgorithm finalAllocation = AllocationAlgorithm.KNAPSACK;
+
+    public static NamedStats treeSize = new NamedStats("TREE");
 
     public static List<ResourceAvailability> allocateResources(
             Job job,
@@ -49,11 +52,13 @@ public class GroupTreeAllocator extends AbstractGroupAllocator{
         int i = 0;
         // main cycle over the solution tree
         while(!tree.isEmpty()){
+            treeSize.addValue("SIZE", ((Integer)tree.size()).doubleValue());
             Node nextNode = tree.poll();
             //System.out.println("Next node with upper estimate" + nextNode.upperEstinate);
 
             if(nextNode.splitGroup == null) {
                 resultingNode = nextNode;  // solution!!
+                treeSize.addValue("FINAL SIZE", ((Integer)tree.size()).doubleValue());
                 //System.out.println("Node " + i + " is solution!");
                 break;
             } else {
